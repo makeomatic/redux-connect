@@ -1,12 +1,14 @@
-var execSync = require('child_process').execSync;
-var stat = require('fs').stat;
+#!/usr/bin/env node
+
+const execSync = require('child_process').execSync;
+const stat = require('fs').stat;
 
 function exec(command) {
   execSync(command, { stdio: [0, 1, 2] });
 }
 
-stat('lib', function (error, stat) {
-  if (error || !stat.isDirectory()) {
+stat('lib', (error, stats) => {
+  if (error || !stats.isDirectory()) {
     exec('npm run build');
   }
 });

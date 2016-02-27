@@ -1,9 +1,10 @@
-import React from 'react';
+import Promise from 'bluebird';
+import React, { PropTypes } from 'react';
 import RouterContext from 'react-router/lib/RouterContext';
 import { beginGlobalLoad, endGlobalLoad } from './asyncConnect';
 import { connect } from 'react-redux';
 
-const { array, func, object, any } = React.PropTypes;
+const { array, func, object, any } = PropTypes;
 
 /**
  * We need to iterate over all components for specified routes.
@@ -15,48 +16,49 @@ const { array, func, object, any } = React.PropTypes;
  */
 function eachComponents(components, iterator) {
   for (let i = 0, l = components.length; i < l; i++) { // eslint-disable-line id-length
-    if (typeof components[i] === 'object') {
-      for (let [key, value] of Object.entries(components[i])) {
-        iterator(value, i, key);
-      }
+    const component = components[i];
+    if (typeof component === 'object') {
+      const keys = Object.keys(component);
+      keys.forEach(key => iterator(component[key], i, key));
     } else {
-      iterator(components[i], i);
+      iterator(component, i);
     }
   }
 }
 
 function filterAndFlattenComponents(components) {
   const flattened = [];
-  eachComponents(components, (Component) => {
-    if (Component && Component.reduxAsyncConnect) {
-      flattened.push(Component);
+  eachComponents(components, component => {
+    if (component && component.reduxAsyncConnect) {
+      flattened.push(component);
     }
   });
   return flattened;
 }
 
-function loadAsyncConnect({components, filter = () => true, ...rest}) {
+function loadAsyncConnect({ components, filter = () => true, ...rest }) {
   let async = false;
-  const promise = Promise.all(filterAndFlattenComponents(components).map(Component => {
-    const asyncItems = Component.reduxAsyncConnect;
+  const promise = Promise.all(filterAndFlattenComponents(components).map(component => {
+    const asyncItems = component.reduxAsyncConnect;
 
     return Promise.all(asyncItems.reduce((itemsResults, item) => {
-      if (filter(item, Component)) {
+      if (filter(item, component)) {
         let promiseOrResult = item.promise(rest);
         if (promiseOrResult && promiseOrResult.then instanceof Function) {
           async = true;
-          promiseOrResult = promiseOrResult.catch(error => ({error}));
+          promiseOrResult = promiseOrResult.catch(error => ({ error }));
         }
+
         return [...itemsResults, promiseOrResult];
-      } else {
-        return itemsResults;
       }
-    }, [])).then(results => {
-      return asyncItems.reduce((result, item, i) => ({...result, [item.key]: results[i]}), {});
-    });
+
+      return itemsResults;
+    }, [])).then(results =>
+      asyncItems.reduce((result, item, i) => ({ ...result, [item.key]: results[i] }), {})
+    );
   }));
 
-  return {promise, async};
+  return { promise, async };
 }
 
 export function loadOnServer(args) {
@@ -87,10 +89,6 @@ class ReduxAsyncConnect extends React.Component {
     }
   };
 
-  isLoaded() {
-    return this.context.store.getState().reduxAsyncConnect.loaded;
-  }
-
   constructor(props, context) {
     super(props, context);
 
@@ -115,9 +113,13 @@ class ReduxAsyncConnect extends React.Component {
     return this.state.propsToShow !== nextState.propsToShow;
   }
 
+  isLoaded() {
+    return this.context.store.getState().reduxAsyncConnect.loaded;
+  }
+
   loadAsyncData(props) {
     const store = this.context.store;
-    const loadResult = loadAsyncConnect({...props, store});
+    const loadResult = loadAsyncConnect({ ...props, store });
 
     loadDataCounter++;
 
@@ -130,20 +132,21 @@ class ReduxAsyncConnect extends React.Component {
           // when user is changing route several times and we finally show him route that has
           // loaded props last time and not the last called route
           if (loadDataCounter === loadDataCounterOriginal) {
-            this.setState({propsToShow: props});
+            this.setState({ propsToShow: props });
           }
+
           this.props.endGlobalLoad();
         });
       })(loadDataCounter);
     } else {
-      this.setState({propsToShow: props});
+      this.setState({ propsToShow: props });
     }
   }
 
   render() {
-    const {propsToShow} = this.state;
+    const { propsToShow } = this.state;
     return propsToShow && this.props.render(propsToShow);
   }
 }
 
-export default connect(null, {beginGlobalLoad, endGlobalLoad})(ReduxAsyncConnect);
+export default connect(null, { beginGlobalLoad, endGlobalLoad })(ReduxAsyncConnect);

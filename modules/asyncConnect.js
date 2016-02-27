@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import { createAction, handleActions } from 'redux-actions';
 
 export const LOAD = 'reduxAsyncConnect/LOAD';
 export const LOAD_SUCCESS = 'reduxAsyncConnect/LOAD_SUCCESS';
@@ -7,124 +8,123 @@ export const CLEAR = 'reduxAsyncConnect/CLEAR';
 export const BEGIN_GLOBAL_LOAD = 'reduxAsyncConnect/BEGIN_GLOBAL_LOAD';
 export const END_GLOBAL_LOAD = 'reduxAsyncConnect/END_GLOBAL_LOAD';
 
-export function reducer(state = {loaded: false}, action = {}) {
-  switch (action.type) {
-    case BEGIN_GLOBAL_LOAD:
-      return {
-        ...state,
-        loaded: false
-      };
-    case END_GLOBAL_LOAD:
-      return {
-        ...state,
-        loaded: true
-      };
-    case LOAD:
-      return {
-        ...state,
-        loadState: {
-          [action.key]: {
-            loading: true,
-            loaded: false
-          }
-        }
-      };
-    case LOAD_SUCCESS:
-      return {
-        ...state,
-        loadState: {
-          [action.key]: {
-            loading: false,
-            loaded: true,
-            error: null
-          }
-        },
-        [action.key]: action.data
-      };
-    case LOAD_FAIL:
-      return {
-        ...state,
-        loadState: {
-          [action.key]: {
-            loading: false,
-            loaded: false,
-            error: action.error
-          }
-        },
-        [action.key]: null
-      };
-    case CLEAR:
-      return {
-        ...state,
-        loadState: {
-          [action.key]: {
-            loading: false,
-            loaded: false,
-            error: null
-          }
-        },
-        [action.key]: null
-      };
-    default:
-      return state;
-  }
-}
+const initialState = {
+  loaded: false,
+  loadState: {},
+};
 
-export function clearKey(key) {
-  return {
-    type: CLEAR,
-    key
-  };
-}
+export const reducer = handleActions({
 
-export function beginGlobalLoad() {
-  return { type: BEGIN_GLOBAL_LOAD };
-}
+  [BEGIN_GLOBAL_LOAD]: (state) => ({
+    ...state,
+    loaded: false,
+  }),
 
-export function endGlobalLoad() {
-  return { type: END_GLOBAL_LOAD };
-}
+  [END_GLOBAL_LOAD]: (state) => ({
+    ...state,
+    loaded: true
+  }),
 
-function load(key) {
-  return {
-    type: LOAD,
-    key
-  };
-}
+  [LOAD]: (state, { payload }) => ({
+    ...state,
+    loadState: {
+      ...state.loadState,
+      [payload.key]: {
+        loading: true,
+        loaded: false,
+      },
+    },
+  }),
 
-export function loadSuccess(key, data) {
-  return {
-    type: LOAD_SUCCESS,
-    key,
-    data
-  };
-}
+  [LOAD_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    loadState: {
+      ...state.loadState,
+      [payload.key]: {
+        loading: false,
+        loaded: true,
+        error: null,
+      },
+    },
+  }),
 
-function loadFail(key, error) {
-  return {
-    type: LOAD_FAIL,
-    key,
-    error
-  };
+  [LOAD_FAIL]: (state, { payload }) => ({
+    ...state,
+    loadState: {
+      ...state.loadState,
+      [payload.key]: {
+        loading: false,
+        loaded: false,
+        error: payload.error,
+      },
+    },
+  }),
+
+  [CLEAR]: (state, { payload }) => ({
+    ...state,
+    loadState: {
+      ...state.loadState,
+      [payload]: {
+        loading: false,
+        loaded: false,
+        error: null,
+      },
+    },
+    [payload]: null,
+  }),
+
+}, initialState);
+
+export const clearKey = createAction(CLEAR);
+
+export const beginGlobalLoad = createAction(BEGIN_GLOBAL_LOAD);
+
+export const endGlobalLoad = createAction(END_GLOBAL_LOAD);
+
+export const load = createAction(LOAD, (key) => ({
+  key,
+}));
+
+export const loadSuccess = createAction(LOAD_SUCCESS, (key, data) => ({
+  key,
+  data,
+}));
+
+export const loadFail = createAction(LOAD_FAIL, (key, error) => ({
+  key,
+  error,
+}));
+
+function isPromise(obj) {
+  return obj && obj.then instanceof Function;
 }
 
 function wrapWithDispatch(asyncItems) {
-  return asyncItems.map(item =>
-    item.key ? {...item, promise: (options) => {
-      const {dispatch} = options.store;
-      const promiseOrResult = item.promise(options);
-      if (promiseOrResult !== undefined) {
-        if (promiseOrResult.then instanceof Function) {
-          dispatch(load(item.key));
-          promiseOrResult.then(data => dispatch(loadSuccess(item.key, data)))
-                         .catch(err => dispatch(loadFail(item.key, err)));
+  return asyncItems.map(item => {
+    const key = item.key;
+    if (!key) {
+      return item;
+    }
+
+    return {
+      ...item,
+      promise: options => {
+        const { dispatch } = options;
+        const next = item.promise(options);
+
+        if (isPromise(next)) {
+          dispatch(load(key));
+          next
+            .then(data => dispatch(loadSuccess(key, data)))
+            .catch(err => dispatch(loadFail(key, err)));
+        } else if (next) {
+          dispatch(loadSuccess(key, next));
         }
 
-        dispatch(loadSuccess(item.key, promiseOrResult));
-      }
-      return promiseOrResult;
-    }} : item
-  );
+        return next;
+      },
+    };
+  });
 }
 
 export function asyncConnect(asyncItems) {
@@ -132,8 +132,8 @@ export function asyncConnect(asyncItems) {
     Component.reduxAsyncConnect = wrapWithDispatch(asyncItems);
 
     const finalMapStateToProps = state => {
-      return asyncItems.reduce((result, item) =>
-        item.key ? {...result, [item.key]: state.reduxAsyncConnect[item.key]} : result,
+      asyncItems.reduce((result, { key }) =>
+        key ? { ...result, [key]: state.reduxAsyncConnect[key] } : result,
         {}
       );
     };
