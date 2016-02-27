@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { createAction, handleActions } from 'redux-actions';
+import { isPromise } from './isPromise.js';
 
 export const LOAD = 'reduxAsyncConnect/LOAD';
 export const LOAD_SUCCESS = 'reduxAsyncConnect/LOAD_SUCCESS';
@@ -22,7 +23,7 @@ export const reducer = handleActions({
 
   [END_GLOBAL_LOAD]: (state) => ({
     ...state,
-    loaded: true
+    loaded: true,
   }),
 
   [LOAD]: (state, { payload }) => ({
@@ -36,26 +37,27 @@ export const reducer = handleActions({
     },
   }),
 
-  [LOAD_SUCCESS]: (state, { payload }) => ({
+  [LOAD_SUCCESS]: (state, { payload: { key, data } }) => ({
     ...state,
     loadState: {
       ...state.loadState,
-      [payload.key]: {
+      [key]: {
         loading: false,
         loaded: true,
         error: null,
       },
     },
+    [key]: data
   }),
 
-  [LOAD_FAIL]: (state, { payload }) => ({
+  [LOAD_FAIL]: (state, { payload: { key, error } }) => ({
     ...state,
     loadState: {
       ...state.loadState,
-      [payload.key]: {
+      [key]: {
         loading: false,
         loaded: false,
-        error: payload.error,
+        error,
       },
     },
   }),
@@ -95,10 +97,6 @@ export const loadFail = createAction(LOAD_FAIL, (key, error) => ({
   error,
 }));
 
-function isPromise(obj) {
-  return obj && obj.then instanceof Function;
-}
-
 function wrapWithDispatch(asyncItems) {
   return asyncItems.map(item => {
     const key = item.key;
@@ -109,7 +107,7 @@ function wrapWithDispatch(asyncItems) {
     return {
       ...item,
       promise: options => {
-        const { dispatch } = options;
+        const { store: { dispatch } } = options;
         const next = item.promise(options);
 
         if (isPromise(next)) {
@@ -131,12 +129,18 @@ export function asyncConnect(asyncItems) {
   return Component => {
     Component.reduxAsyncConnect = wrapWithDispatch(asyncItems);
 
-    const finalMapStateToProps = state => {
-      asyncItems.reduce((result, { key }) =>
-        key ? { ...result, [key]: state.reduxAsyncConnect[key] } : result,
-        {}
-      );
-    };
+    const finalMapStateToProps = state => (
+      asyncItems.reduce((result, { key }) => {
+        if (!key) {
+          return result;
+        }
+
+        return {
+          ...result,
+          [key]: state.reduxAsyncConnect[key],
+        };
+      }, {})
+    );
 
     return connect(finalMapStateToProps)(Component);
   };

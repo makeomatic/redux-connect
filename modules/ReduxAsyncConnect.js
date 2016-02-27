@@ -3,6 +3,7 @@ import React, { PropTypes } from 'react';
 import RouterContext from 'react-router/lib/RouterContext';
 import { beginGlobalLoad, endGlobalLoad } from './asyncConnect';
 import { connect } from 'react-redux';
+import { isPromise } from './isPromise.js';
 
 const { array, func, object, any } = PropTypes;
 
@@ -37,38 +38,44 @@ function filterAndFlattenComponents(components) {
 }
 
 function loadAsyncConnect({ components, filter = () => true, ...rest }) {
-  let async = false;
-  const promise = Promise.all(filterAndFlattenComponents(components).map(component => {
+  const flattened = filterAndFlattenComponents(components);
+
+  // this allows us to have nested promises, that rely on each other's completion
+  // cycle
+  return Promise.mapSeries(flattened, component => {
     const asyncItems = component.reduxAsyncConnect;
 
-    return Promise.all(asyncItems.reduce((itemsResults, item) => {
-      if (filter(item, component)) {
-        let promiseOrResult = item.promise(rest);
+    return Promise
+      .resolve(asyncItems)
+      .reduce((itemsResults, item) => {
+        if (filter(item, component)) {
+          let promiseOrResult = item.promise(rest);
 
-        if (promiseOrResult && promiseOrResult.then instanceof Function) {
-          async = true;
-          promiseOrResult = promiseOrResult.catch(error => ({ error }));
+          if (isPromise(promiseOrResult)) {
+            promiseOrResult = promiseOrResult.catch(error => ({ error }));
+          }
+
+          itemsResults.push(promiseOrResult);
         }
 
-        return [...itemsResults, promiseOrResult];
-      }
+        return itemsResults;
+      }, [])
+      .reduce((finalResult, result, idx) => {
+        const { key } = asyncItems[idx];
+        if (key) {
+          finalResult[key] = result;
+        }
 
-      return itemsResults;
-    }, [])).then(results =>
-      asyncItems.reduce((result, item, i) => ({ ...result, [item.key]: results[i] }), {})
-    );
-  }));
-
-  return { promise, async };
-}
-
-export function loadOnServer(args) {
-  return loadAsyncConnect(args).promise.then(() => {
-    args.store.dispatch(endGlobalLoad());
+        return finalResult;
+      }, {});
   });
 }
 
-let loadDataCounter = 0;
+export function loadOnServer(args) {
+  return loadAsyncConnect(args).then(() => {
+    args.store.dispatch(endGlobalLoad());
+  });
+}
 
 class ReduxAsyncConnect extends React.Component {
   static propTypes = {
@@ -94,8 +101,10 @@ class ReduxAsyncConnect extends React.Component {
     super(props, context);
 
     this.state = {
-      propsToShow: this.isLoaded() ? props : null
+      propsToShow: this.isLoaded() ? props : null,
     };
+
+    this.loadDataCounter = 0;
   }
 
   componentDidMount() {
@@ -122,26 +131,21 @@ class ReduxAsyncConnect extends React.Component {
     const store = this.context.store;
     const loadResult = loadAsyncConnect({ ...props, store });
 
-    loadDataCounter++;
+    this.loadDataCounter++;
+    this.props.beginGlobalLoad();
+    (loadDataCounterOriginal => {
+      loadResult.then(() => {
+        // We need to change propsToShow only if loadAsyncData that called this promise
+        // is the last invocation of loadAsyncData method. Otherwise we can face situation
+        // when user is changing route several times and we finally show him route that has
+        // loaded props last time and not the last called route
+        if (this.loadDataCounter === loadDataCounterOriginal) {
+          this.setState({ propsToShow: props });
+        }
 
-    if (loadResult.async) {
-      this.props.beginGlobalLoad();
-      (loadDataCounterOriginal => {
-        loadResult.promise.then(() => {
-          // We need to change propsToShow only if loadAsyncData that called this promise
-          // is the last invocation of loadAsyncData method. Otherwise we can face situation
-          // when user is changing route several times and we finally show him route that has
-          // loaded props last time and not the last called route
-          if (loadDataCounter === loadDataCounterOriginal) {
-            this.setState({ propsToShow: props });
-          }
-
-          this.props.endGlobalLoad();
-        });
-      })(loadDataCounter);
-    } else {
-      this.setState({ propsToShow: props });
-    }
+        this.props.endGlobalLoad();
+      });
+    })(this.loadDataCounter);
   }
 
   render() {
