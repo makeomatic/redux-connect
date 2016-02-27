@@ -1,6 +1,6 @@
 {
   "name": "redux-async-connect",
-  "version": "1.0.0-rc1",
+  "version": "1.0.0-rc2",
   "description": "It allows you to request async data, store them in redux state and connect them to your react component.",
   "main": "lib/index.js",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "git+ssh://git@github.com/Rezonans/redux-async-connect.git"
   },
   "scripts": {
-    "build": "babel ./modules -d lib --ignore '__tests__'",
+    "build": "rm -rf ./lib; babel ./modules -d lib --ignore '__tests__'",
     "lint": "eslint modules",
     "start": "babel-node example/server.js",
     "test": "npm run lint && karma start",
