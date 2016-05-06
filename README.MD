@@ -1,6 +1,6 @@
 ReduxConnect for React Router
 ============
-[![npm version](https://img.shields.io/npm/v/redux-async-connect.svg?style=flat-square)](https://www.npmjs.com/package/redux-connect)
+[![npm version](https://img.shields.io/npm/v/redux-connect.svg?style=flat-square)](https://www.npmjs.com/package/redux-connect)
 
 How do you usually request data and store it to redux state?
 You create actions that do async jobs to load data, create reducer to save this data to redux state,
@@ -13,6 +13,10 @@ or you just want pages to be solid, don't jump when data was loaded.
 
 This package consist of 2 parts: one part allows you to delay containers rendering until some async actions are happening.
 Another stores your data to redux state and connect your loaded data to your container.
+
+## Notice
+
+This is a fork and refactor of [redux-async-connect](https://github.com/Rezonans/redux-async-connect)
 
 ## Installation & Usage
 
