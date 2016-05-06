@@ -64,7 +64,7 @@ render((
 ```js
 import { renderToString } from 'react-dom/server'
 import { match, RoutingContext } from 'react-router'
-import { ReduxAsyncConnect, loadOnServer, reducer as reduxAsyncConnect } from 'redux-async-connect'
+import { ReduxAsyncConnect, loadOnServer, reducer as reduxAsyncConnect } from 'redux-connect'
 import createHistory from 'history/lib/createMemoryHistory';
 import { Provider } from 'react-redux';
 import { createStore, combineReducers } from 'redux';
