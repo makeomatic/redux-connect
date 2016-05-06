@@ -11,7 +11,7 @@
     "build": "rm -rf ./lib; NODE_ENV=production babel ./modules -d lib --ignore '__tests__'",
     "lint": "eslint ./modules",
     "test": "jest",
-    "prepublish": "npm run lint && ./npm-scripts/postinstall.js"
+    "prepublish": "npm run lint && npm run build"
   },
   "keywords": [
     "redux",
