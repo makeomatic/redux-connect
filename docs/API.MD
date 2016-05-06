@@ -6,7 +6,7 @@ It allows to delay route transition until all promises returned by reduxAsyncCon
 
 #### Props
 ##### `components` (required)
-The list of components corresponding current route. It not instances... 
+The list of components corresponding current route. It not instances...
 Usually it is provided by react Router component or match method from react router.
 
 ##### `params` (required)
@@ -21,29 +21,15 @@ Usually it's just <RouterContext {...props} /> (by default)
 Any helpers you may want pass to your reduxAsyncConnect static method.
 For example some fetching library.
 
-#### `reduxAsyncConnect` static method
-You can define such static method in your container components, that are connected with router.
-It allows you to delay rendering until this promise will be resolved or rejected.
-It accepts params from router, redux store and helpers
-It can return promise. If it returns something else, ReduxAsyncConnect will not delay rendering.
-_**Example:**_
-```js
-  static reduxAsyncConnect(params, store, helpers) {
-    const {dispatch, getState} = store;
-    if (!isLoaded(getState())) {
-      return dispatch(loadWidgets());
-    }
-  }
-```
-
 ## asyncConnect decorator
 This is the function that uses to decorate your container components that is connected with router.
 It should provide mapStateToProps object like that:
 
 ```js
-@asyncConnect({
-  lunches: (params, helpers) => helpers.client.get('/lunches')
-})
+@asyncConnect([{
+  key: 'lunches',
+  promise: (params, helpers) => helpers.client.get('/lunches'),
+}])
 export default class Home extends Component {
   // ...
 }

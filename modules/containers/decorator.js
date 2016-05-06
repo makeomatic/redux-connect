@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
-import { load, loadFail, loadSuccess, isPromise } from '../helpers/utils';
+import { isPromise } from '../helpers/utils';
+import { load, loadFail, loadSuccess } from '../store';
 
 /**
  * Wraps react components with data loaders

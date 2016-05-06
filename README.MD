@@ -18,19 +18,20 @@ Another stores your data to redux state and connect your loaded data to your con
 
 Using [npm](https://www.npmjs.com/):
 
-`$ npm install redux-async-connect babel-runtime bluebird -S`
+`$ npm install redux-connect -S`
 
 ```js
 import { Router, browserHistory } from 'react-router';
-import { ReduxAsyncConnect, asyncConnect, reducer as reduxAsyncConnect } from 'redux-async-connect'
+import { ReduxAsyncConnect, asyncConnect, reducer as reduxAsyncConnect } from 'redux-connect'
 import React from 'react'
 import { render } from 'react-dom'
 import { createStore, combineReducers } from 'redux';
 
 // 1. Connect your data, similar to react-redux @connect
-@asyncConnect({
-  lunch: (params, helpers) => Promise.resolve({id: 1, name: 'Borsch'})
-})
+@asyncConnect([{
+  key: 'lunch',
+  promise: ({ params, helpers }) => Promise.resolve({ id: 1, name: 'Borsch' })
+}])
 class App extends React.Component {
   render() {
     // 2. access data as props
@@ -42,7 +43,7 @@ class App extends React.Component {
 }
 
 // 3. Connect redux async reducer
-const store = createStore(combineReducers({reduxAsyncConnect}), window.__data);
+const store = createStore(combineReducers({ reduxAsyncConnect }), window.__data);
 
 // 4. Render `Router` with ReduxAsyncConnect middleware
 render((
@@ -61,17 +62,16 @@ import { renderToString } from 'react-dom/server'
 import { match, RoutingContext } from 'react-router'
 import { ReduxAsyncConnect, loadOnServer, reducer as reduxAsyncConnect } from 'redux-async-connect'
 import createHistory from 'history/lib/createMemoryHistory';
-import {Provider} from 'react-redux';
+import { Provider } from 'react-redux';
 import { createStore, combineReducers } from 'redux';
 
 app.get('*', (req, res) => {
-  const history = createHistory();
-  const store = createStore(combineReducers({reduxAsyncConnect}));
+  const store = createStore(combineReducers({ reduxAsyncConnect }));
 
   match({ routes, location: req.url }, (err, redirect, renderProps) => {
 
     // 1. load data
-    loadOnServer(renderProps, store).then(() => {
+    loadOnServer({ ...renderProps, store }).then(() => {
 
       // 2. use `ReduxAsyncConnect` instead of `RoutingContext` and pass it `renderProps`
       const appHTML = renderToString(
@@ -108,7 +108,7 @@ function createPage(html, store) {
 
 There are some solutions of problem described above:
 
-- [**AsyncProps**](https://github.com/rackt/async-props)
+- [**AsyncProps**](https://github.com/ryanflorence/async-props)
   It solves the same problem, but it doesn't work with redux state. Also it's significantly more complex inside,
   because it contains lots of logic to connect data to props.
   It uses callbacks against promises...
@@ -119,7 +119,7 @@ There are some solutions of problem described above:
 - [**react-resolver**](https://github.com/ericclemmons/react-resolver)
   Works similar, but isn't integrated with redux.
 
-**Redux Async Connect** uses awesome [Redux](https://github.com/rackt/redux) to keep all fetched data in state.
+**Redux Connect** uses awesome [Redux](https://github.com/reactjs/redux) to keep all fetched data in state.
 This integration gives you agility:
 
 - you can react on fetching actions like data loading or load success in your own reducers
@@ -131,8 +131,9 @@ Also it's integrated with [React Router](https://github.com/rackt/react-router) 
 until data is loaded.
 
 ## Contributors
+- [Vitaly Aminev](https://en.makeomatic.ru)
 - [Rodion Salnik](https://github.com/sars)
 - [Rezonans team](https://github.com/Rezonans)
 
 ## Collaboration
-You're welcome to PR, and we appreciate any questions or issues, please [open an issue](https://github.com/Rezonans/redux-async-connect/issues)!
+You're welcome to PR, and we appreciate any questions or issues, please [open an issue](https://github.com/makeomatic/redux-connect/issues)!

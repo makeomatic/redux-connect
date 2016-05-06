@@ -1,13 +1,14 @@
 {
-  "extends": "eslint-config-airbnb",
+  "extends": "airbnb",
   "parser": "babel-eslint",
   "env": {
     "browser": true,
     "node": true,
-    "mocha": true
+    "jest": true
   },
   "rules": {
-    "no-param-reassign": [2, {"props": false}]
+    "no-param-reassign": [2, {"props": false}],
+    "prefer-arrow-callback": 0
   },
   "settings": {
     "import/parser": "babel-eslint",

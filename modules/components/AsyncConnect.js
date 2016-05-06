@@ -35,7 +35,8 @@ export default class AsyncConnect extends Component {
   componentDidMount() {
     const dataLoaded = this.isLoaded();
 
-    if (!dataLoaded) { // we dont need it if we already made it on server-side
+    // we dont need it if we already made it on server-side
+    if (!dataLoaded) {
       this.loadAsyncData(this.props);
     }
   }
