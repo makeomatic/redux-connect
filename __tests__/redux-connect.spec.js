@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-import Promise from 'bluebird';
 import React from 'react';
 import { Provider } from 'react-redux';
 import { Router, createMemoryHistory, match, Route } from 'react-router';
