@@ -109,6 +109,41 @@ function createPage(html, store) {
 
 ## [API](/docs/API.MD)
 
+## Usage with `applyRouterMiddleware`
+
+Thanks to @mmahalwy for a good usage example
+Pass custom `render` method to `ReduxAsyncConnect`, it can look like this:
+
+```js
+// on client
+const component = (
+  <Router
+    render={(props) => (
+      <ReduxAsyncConnect
+        {...props}
+        helpers={{ client }}
+        filter={item => !item.deferred}
+        render={applyRouterMiddleware(useScroll())}
+      />
+    )}
+    history={history}
+    routes={getRoutes(store)}
+  />
+);
+```
+
+Basically what you do is instead of using render method like:
+
+```js
+const render = props => <RouterContext {...props} />;
+```
+
+you use
+
+```js
+const render = applyRouterMiddleware(...middleware);
+```
+
 ## Comparing with other libraries
 
 There are some solutions of problem described above:
