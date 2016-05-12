@@ -10,7 +10,7 @@
   "scripts": {
     "build": "rm -rf ./lib; NODE_ENV=production babel ./modules -d lib --ignore '__tests__'",
     "lint": "eslint ./modules",
-    "test": "jest",
+    "test": "npm run lint && jest",
     "prepublish": "npm run lint && npm run build"
   },
   "keywords": [
@@ -49,7 +49,7 @@
     "bluebird": "^3.3.3",
     "enzyme": "^2.2.0",
     "eslint": "^2.9.0",
-    "eslint-config-airbnb": "^8.0.0",
+    "eslint-config-airbnb": "^9.0.1",
     "eslint-plugin-import": "^1.6.1",
     "eslint-plugin-jsx-a11y": "^1.2.0",
     "eslint-plugin-react": "^5.0.1",
