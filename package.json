@@ -63,8 +63,7 @@
   },
   "dependencies": {
     "redux-actions": "^0.9.1",
-    "babel-runtime": "~6.x.x",
-    "bluebird": "~3.x.x"
+    "babel-runtime": "~6.x.x"
   },
   "jest": {
     "automock": false,

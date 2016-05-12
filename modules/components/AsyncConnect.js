@@ -57,21 +57,22 @@ export default class AsyncConnect extends Component {
     const store = this.context.store;
     const loadResult = loadAsyncConnect({ ...props, store });
 
+    // TODO: think of a better solution to a problem?
     this.loadDataCounter++;
     this.props.beginGlobalLoad();
-    (loadDataCounterOriginal => {
-      loadResult.then(() => {
-        // We need to change propsToShow only if loadAsyncData that called this promise
-        // is the last invocation of loadAsyncData method. Otherwise we can face situation
-        // when user is changing route several times and we finally show him route that has
-        // loaded props last time and not the last called route
-        if (this.loadDataCounter === loadDataCounterOriginal) {
-          this.setState({ propsToShow: props });
-        }
+    return (loadDataCounterOriginal => loadResult.then(() => {
+      // We need to change propsToShow only if loadAsyncData that called this promise
+      // is the last invocation of loadAsyncData method. Otherwise we can face situation
+      // when user is changing route several times and we finally show him route that has
+      // loaded props last time and not the last called route
+      if (this.loadDataCounter === loadDataCounterOriginal) {
+        this.setState({ propsToShow: props });
+      }
 
-        this.props.endGlobalLoad();
-      });
-    })(this.loadDataCounter);
+      // TODO: investigate race conditions
+      // do we need to call this if it's not last invocation?
+      this.props.endGlobalLoad();
+    }))(this.loadDataCounter);
   }
 
   render() {

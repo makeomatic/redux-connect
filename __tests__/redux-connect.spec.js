@@ -1,26 +1,36 @@
 /* eslint-disable react/prop-types */
 import Promise from 'bluebird';
 import React from 'react';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import { Router, createMemoryHistory, match, Route } from 'react-router';
 import { createStore, combineReducers } from 'redux';
 import { mount, render } from 'enzyme';
 import { spy } from 'sinon';
 
 // import module
+import { endGlobalLoad, beginGlobalLoad } from '../modules/store';
+import AsyncConnect from '../modules/components/AsyncConnect';
 import {
-  ReduxAsyncConnect,
   asyncConnect,
   reducer as reduxAsyncConnect,
   loadOnServer,
 } from '../modules/index';
 
 describe('<ReduxAsyncConnect />', function suite() {
+  const endGlobalLoadSpy = spy(endGlobalLoad);
+  const beginGlobalLoadSpy = spy(beginGlobalLoad);
+  const ReduxAsyncConnect = connect(null, {
+    beginGlobalLoad: beginGlobalLoadSpy,
+    endGlobalLoad: endGlobalLoadSpy,
+  })(AsyncConnect);
   const renderReduxAsyncConnect = props => <ReduxAsyncConnect {...props} />;
   const App = (props) => <div>{props.lunch}</div>;
   const WrappedApp = asyncConnect([{
     key: 'lunch',
     promise: () => Promise.resolve('sandwich'),
+  }, {
+    key: 'action',
+    promise: ({ helpers }) => Promise.resolve(helpers.eat()),
   }])(App);
   const reducers = combineReducers({ reduxAsyncConnect });
   const routes = (
@@ -33,6 +43,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   pit('properly fetches data on the server', function test() {
     return new Promise((resolve, reject) => {
       const store = createStore(reducers);
+      const eat = spy(() => 'yammi');
 
       match({ routes, location: '/' }, (err, redirect, renderProps) => {
         if (err) {
@@ -47,7 +58,7 @@ describe('<ReduxAsyncConnect />', function suite() {
           return reject(new Error('404'));
         }
 
-        return loadOnServer({ ...renderProps, store }).then(() => {
+        return loadOnServer({ ...renderProps, store, helpers: { eat } }).then(() => {
           const html = render(
             <Provider store={store} key="provider">
               <ReduxAsyncConnect {...renderProps} />
@@ -58,9 +69,18 @@ describe('<ReduxAsyncConnect />', function suite() {
           state = store.getState();
           expect(state.reduxAsyncConnect.loaded).toBe(true);
           expect(state.reduxAsyncConnect.lunch).toBe('sandwich');
+          expect(state.reduxAsyncConnect.action).toBe('yammi');
           expect(state.reduxAsyncConnect.loadState.lunch.loading).toBe(false);
           expect(state.reduxAsyncConnect.loadState.lunch.loaded).toBe(true);
           expect(state.reduxAsyncConnect.loadState.lunch.error).toBe(null);
+          expect(eat.calledOnce).toBe(true);
+
+          // global loader spy
+          expect(endGlobalLoadSpy.called).toBe(false);
+          expect(beginGlobalLoadSpy.called).toBe(false);
+          endGlobalLoadSpy.reset();
+          beginGlobalLoadSpy.reset();
+
           resolve();
         })
         .catch(reject);
@@ -72,13 +92,14 @@ describe('<ReduxAsyncConnect />', function suite() {
     const store = createStore(reducers, state);
     const history = createMemoryHistory();
     const proto = ReduxAsyncConnect.WrappedComponent.prototype;
+    const eat = spy(() => 'yammi');
 
     spy(proto, 'loadAsyncData');
     spy(proto, 'componentDidMount');
 
     const wrapper = mount(
       <Provider store={store} key="provider">
-        <Router render={renderReduxAsyncConnect} history={history} >
+        <Router render={renderReduxAsyncConnect} helpers={{ eat }} history={history} >
           {routes}
         </Router>
       </Provider>
@@ -86,17 +107,25 @@ describe('<ReduxAsyncConnect />', function suite() {
 
     expect(proto.loadAsyncData.called).toBe(false);
     expect(proto.componentDidMount.calledOnce).toBe(true);
+    expect(eat.called).toBe(false);
 
     expect(wrapper.find(App).length).toBe(1);
     expect(wrapper.find(App).prop('lunch')).toBe('sandwich');
+
+    // global loader spy
+    expect(endGlobalLoadSpy.called).toBe(false);
+    expect(beginGlobalLoadSpy.called).toBe(false);
+    endGlobalLoadSpy.reset();
+    beginGlobalLoadSpy.reset();
 
     proto.loadAsyncData.restore();
     proto.componentDidMount.restore();
   });
 
-  it('loads data on client side when it wasn\'t provided by server', function test() {
+  pit('loads data on client side when it wasn\'t provided by server', function test() {
     const store = createStore(reducers);
     const history = createMemoryHistory();
+    const eat = spy(() => 'yammi');
     const proto = ReduxAsyncConnect.WrappedComponent.prototype;
 
     spy(proto, 'loadAsyncData');
@@ -104,7 +133,7 @@ describe('<ReduxAsyncConnect />', function suite() {
 
     mount(
       <Provider store={store} key="provider">
-        <Router render={renderReduxAsyncConnect} history={history} >
+        <Router render={renderReduxAsyncConnect} history={history} helpers={{ eat }} >
           {routes}
         </Router>
       </Provider>
@@ -113,7 +142,17 @@ describe('<ReduxAsyncConnect />', function suite() {
     expect(proto.loadAsyncData.calledOnce).toBe(true);
     expect(proto.componentDidMount.calledOnce).toBe(true);
 
-    proto.loadAsyncData.restore();
-    proto.componentDidMount.restore();
+
+    // global loader spy
+    expect(beginGlobalLoadSpy.called).toBe(true);
+    beginGlobalLoadSpy.reset();
+
+    return proto.loadAsyncData.returnValues[0].then(() => {
+      expect(endGlobalLoadSpy.called).toBe(true);
+      endGlobalLoadSpy.reset();
+
+      proto.loadAsyncData.restore();
+      proto.componentDidMount.restore();
+    });
   });
 });
