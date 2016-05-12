@@ -1,4 +1,3 @@
-import Promise from 'bluebird';
 import { endGlobalLoad } from '../store';
 
 /**
@@ -45,6 +44,20 @@ export function filterAndFlattenComponents(components) {
   return flattened;
 }
 
+const promiseMapSeries = Promise.mapSeries || function mapSeries(array, iterator) {
+  const length = array.length;
+  let current = Promise.resolve();
+  const results = new Array(length);
+  const cb = (arr, index) => () => iterator(array[index], index, arr);
+
+  for (let i = 0; i < length; ++i) {
+    current = results[i] = current.then(cb(array, i));
+  }
+
+  return Promise.all(results);
+};
+
+
 /**
  * Function that accepts components with reduxAsyncConnect definitions
  * and loads data
@@ -57,32 +70,31 @@ export function loadAsyncConnect({ components, filter = () => true, ...rest }) {
 
   // this allows us to have nested promises, that rely on each other's completion
   // cycle
-  return Promise.mapSeries(flattened, component => {
-    const asyncItems = component.reduxAsyncConnect;
+  return promiseMapSeries(flattened, component => {
+    const asyncItems = component.reduxAsyncConnect || [];
 
-    return Promise
-      .resolve(asyncItems)
-      .reduce((itemsResults, item) => {
-        if (filter(item, component)) {
-          let promiseOrResult = item.promise(rest);
+    return Promise.all(asyncItems
+        .reduce((itemsResults, item) => {
+          if (filter(item, component)) {
+            let promiseOrResult = item.promise(rest);
 
-          if (isPromise(promiseOrResult)) {
-            promiseOrResult = promiseOrResult.catch(error => ({ error }));
+            if (isPromise(promiseOrResult)) {
+              promiseOrResult = promiseOrResult.catch(error => ({ error }));
+            }
+
+            return itemsResults.concat(promiseOrResult);
           }
 
-          itemsResults.push(promiseOrResult);
-        }
+          return itemsResults;
+        }, []))
+        .then(results => results.reduce((finalResult, result, idx) => {
+          const { key } = asyncItems[idx];
+          if (key) {
+            finalResult[key] = result;
+          }
 
-        return itemsResults;
-      }, [])
-      .reduce((finalResult, result, idx) => {
-        const { key } = asyncItems[idx];
-        if (key) {
-          finalResult[key] = result;
-        }
-
-        return finalResult;
-      }, {});
+          return finalResult;
+        }, {}));
   });
 }
 
