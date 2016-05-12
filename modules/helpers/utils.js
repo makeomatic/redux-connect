@@ -1,4 +1,3 @@
-import Promise from 'bluebird';
 import { endGlobalLoad } from '../store';
 
 /**
@@ -11,6 +10,30 @@ export function isPromise(obj) {
 }
 
 /**
+ * Utility to be able to iterate over array of promises in an async fashion
+ * @param  {Array} iterable
+ * @param  {Function} iterator
+ * @return {Promise}
+ */
+const mapSeries = Promise.mapSeries || function promiseMapSeries(iterable, iterator) {
+  const length = iterable.length;
+  const results = new Array(length);
+  let i = 0;
+
+  return Promise.resolve()
+    .then(function iterateOverResults() {
+      return iterator(iterable[i], i, iterable).then(result => {
+        results[i++] = result;
+        if (i < length) {
+          return iterateOverResults();
+        }
+
+        return results;
+      });
+    });
+};
+
+/**
  * We need to iterate over all components for specified routes.
  * Components array can include objects if named components are used:
  * https://github.com/rackt/react-router/blob/latest/docs/API.md#named-components
@@ -19,7 +42,8 @@ export function isPromise(obj) {
  * @param iterator
  */
 export function eachComponents(components, iterator) {
-  for (let i = 0, l = components.length; i < l; i++) { // eslint-disable-line id-length
+  const l = components.length;
+  for (let i = 0; i < l; i++) {
     const component = components[i];
     if (typeof component === 'object') {
       const keys = Object.keys(component);
@@ -57,32 +81,33 @@ export function loadAsyncConnect({ components, filter = () => true, ...rest }) {
 
   // this allows us to have nested promises, that rely on each other's completion
   // cycle
-  return Promise.mapSeries(flattened, component => {
+  return mapSeries(flattened, component => {
     const asyncItems = component.reduxAsyncConnect;
 
-    return Promise
-      .resolve(asyncItems)
-      .reduce((itemsResults, item) => {
-        if (filter(item, component)) {
-          let promiseOrResult = item.promise(rest);
+    // get array of results
+    const results = asyncItems.reduce((itemsResults, item) => {
+      if (filter(item, component)) {
+        let promiseOrResult = item.promise(rest);
 
-          if (isPromise(promiseOrResult)) {
-            promiseOrResult = promiseOrResult.catch(error => ({ error }));
-          }
-
-          itemsResults.push(promiseOrResult);
+        if (isPromise(promiseOrResult)) {
+          promiseOrResult = promiseOrResult.catch(error => ({ error }));
         }
 
-        return itemsResults;
-      }, [])
-      .reduce((finalResult, result, idx) => {
+        itemsResults.push(promiseOrResult);
+      }
+
+      return itemsResults;
+    }, []);
+
+    return Promise.all(results)
+      .then(finalResults => finalResults.reduce((finalResult, result, idx) => {
         const { key } = asyncItems[idx];
         if (key) {
           finalResult[key] = result;
         }
 
         return finalResult;
-      }, {});
+      }, {}));
   });
 }
 
