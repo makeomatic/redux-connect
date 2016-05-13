@@ -22,6 +22,13 @@ Any helpers you may want pass to your reduxAsyncConnect static method.
 For example some fetching library.
 
 ## asyncConnect decorator
+
+```js
+asyncConnect(AsyncProps: Array, mapStateToProps?, mapDispatchToProps?, mergeProps?, options?)
+```
+
+Signature now corresponds to [react-redux connect](https://github.com/reactjs/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options)
+
 This is the function that uses to decorate your container components that is connected with router.
 It should provide mapStateToProps object like that:
 

@@ -17,6 +17,9 @@ import {
 } from '../modules/index';
 
 describe('<ReduxAsyncConnect />', function suite() {
+  const initialState = {
+    reduxAsyncConnect: { loaded: false, loadState: {}, $$external: 'supported' },
+  };
   const endGlobalLoadSpy = spy(endGlobalLoad);
   const beginGlobalLoadSpy = spy(beginGlobalLoad);
   const ReduxAsyncConnect = connect(null, {
@@ -24,19 +27,22 @@ describe('<ReduxAsyncConnect />', function suite() {
     endGlobalLoad: endGlobalLoadSpy,
   })(AsyncConnect);
   const renderReduxAsyncConnect = props => <ReduxAsyncConnect {...props} />;
-  const App = (props) => <div>{props.lunch}</div>;
+  const App = ({ ...rest, lunch }) => <div {...rest}>{lunch}</div>;
   const WrappedApp = asyncConnect([{
     key: 'lunch',
     promise: () => Promise.resolve('sandwich'),
   }, {
     key: 'action',
     promise: ({ helpers }) => Promise.resolve(helpers.eat()),
-  }])(App);
+  }], (state, ownProps) => ({
+    externalState: state.reduxAsyncConnect.$$external,
+    remappedProp: ownProps.route.remap,
+  }))(App);
   const UnwrappedApp = () => <div>Hi, I do not use @asyncConnect</div>;
   const reducers = combineReducers({ reduxAsyncConnect });
   const routes = (
     <Route path="/">
-      <IndexRoute component={WrappedApp} />
+      <IndexRoute component={WrappedApp} remap="on" />
       <Route path="/notconnected" component={UnwrappedApp} />
     </Route>
   );
@@ -159,6 +165,45 @@ describe('<ReduxAsyncConnect />', function suite() {
       proto.componentDidMount.restore();
     });
   });
+
+  pit('supports extended connect signature', function test() {
+    const store = createStore(reducers, initialState);
+    const history = createMemoryHistory();
+    const eat = spy(() => 'yammi');
+    const proto = ReduxAsyncConnect.WrappedComponent.prototype;
+
+    spy(proto, 'loadAsyncData');
+    spy(proto, 'componentDidMount');
+
+    const wrapper = mount(
+      <Provider store={store} key="provider">
+        <Router render={renderReduxAsyncConnect} history={history} helpers={{ eat }} >
+          {routes}
+        </Router>
+      </Provider>
+    );
+
+    expect(proto.loadAsyncData.calledOnce).toBe(true);
+    expect(proto.componentDidMount.calledOnce).toBe(true);
+
+    // global loader spy
+    expect(beginGlobalLoadSpy.called).toBe(true);
+    beginGlobalLoadSpy.reset();
+
+    return proto.loadAsyncData.returnValues[0].then(() => {
+      expect(endGlobalLoadSpy.called).toBe(true);
+      endGlobalLoadSpy.reset();
+
+      expect(wrapper.find(App).length).toBe(1);
+      expect(wrapper.find(App).prop('lunch')).toBe('sandwich');
+      expect(wrapper.find(App).prop('externalState')).toBe('supported');
+      expect(wrapper.find(App).prop('remappedProp')).toBe('on');
+
+      proto.loadAsyncData.restore();
+      proto.componentDidMount.restore();
+    });
+  });
+
 
   pit('renders even when no component is connected', function test() {
     return new Promise((resolve, reject) => {
