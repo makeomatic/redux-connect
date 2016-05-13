@@ -45,7 +45,6 @@
     "babel-preset-react": "^6.3.13",
     "babel-preset-react-optimize": "^1.0.1",
     "babel-preset-stage-0": "^6.3.13",
-    "babel-runtime": "^6.6.1",
     "bluebird": "^3.3.3",
     "enzyme": "^2.2.0",
     "eslint": "^2.9.0",
