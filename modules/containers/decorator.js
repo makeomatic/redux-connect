@@ -37,12 +37,21 @@ function wrapWithDispatch(asyncItems) {
   });
 }
 
-export function asyncConnect(asyncItems) {
+/**
+ * Exports decorator, which wraps React components with asyncConnect and connect at the same time
+ * @param  {Array} asyncItems
+ * @param  {Function} [mapStateToProps]
+ * @param  {Object|Function} [mapDispatchToProps]
+ * @param  {Function} [mergeProps]
+ * @param  {Object} [options]
+ * @return {Function}
+ */
+export function asyncConnect(asyncItems, mapStateToProps, mapDispatchToProps, mergeProps, options) {
   return Component => {
     Component.reduxAsyncConnect = wrapWithDispatch(asyncItems);
 
-    const finalMapStateToProps = state => (
-      asyncItems.reduce((result, { key }) => {
+    const finalMapStateToProps = (state, ownProps) => {
+      const asyncStateToProps = asyncItems.reduce((result, { key }) => {
         if (!key) {
           return result;
         }
@@ -51,9 +60,18 @@ export function asyncConnect(asyncItems) {
           ...result,
           [key]: state.reduxAsyncConnect[key],
         };
-      }, {})
-    );
+      }, {});
 
-    return connect(finalMapStateToProps)(Component);
+      if (typeof mapStateToProps !== 'function') {
+        return asyncStateToProps;
+      }
+
+      return {
+        ...mapStateToProps(state, ownProps),
+        ...asyncStateToProps,
+      };
+    };
+
+    return connect(finalMapStateToProps, mapDispatchToProps, mergeProps, options)(Component);
   };
 }
