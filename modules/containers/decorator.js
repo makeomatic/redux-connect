@@ -43,7 +43,7 @@ function wrapWithDispatch(asyncItems) {
  * @param  {Function} [mapStateToProps]
  * @param  {Object|Function} [mapDispatchToProps]
  * @param  {Function} [mergeProps]
- * @param  {Object} options
+ * @param  {Object} [options]
  * @return {Function}
  */
 export function asyncConnect(asyncItems, mapStateToProps, mapDispatchToProps, mergeProps, options) {
