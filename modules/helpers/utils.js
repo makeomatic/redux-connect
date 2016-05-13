@@ -79,6 +79,10 @@ export function filterAndFlattenComponents(components) {
 export function loadAsyncConnect({ components, filter = () => true, ...rest }) {
   const flattened = filterAndFlattenComponents(components);
 
+  if (flattened.length === 0) {
+    return Promise.resolve();
+  }
+
   // this allows us to have nested promises, that rely on each other's completion
   // cycle
   return mapSeries(flattened, component => {
