@@ -172,6 +172,7 @@ until data is loaded.
 
 ## Contributors
 - [Vitaly Aminev](https://en.makeomatic.ru)
+- [Eliseu Monar](https://github.com/eliseumds)
 - [Rodion Salnik](https://github.com/sars)
 - [Rezonans team](https://github.com/Rezonans)
 
