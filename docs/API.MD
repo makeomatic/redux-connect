@@ -30,7 +30,10 @@ asyncConnect(AsyncProps: Array, mapStateToProps?, mapDispatchToProps?, mergeProp
 Signature now corresponds to [react-redux connect](https://github.com/reactjs/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options)
 
 This is the function that uses to decorate your container components that is connected with router.
-It should provide mapStateToProps object like that:
+It takes an array of asyncItem objects, each item with two properties:
+
+-  'key'  (string); 
+-  'promise' (function, usually returning a Promise)
 
 ```js
 @asyncConnect([{
@@ -42,14 +45,19 @@ export default class Home extends Component {
 }
 ```
 
-The interface is similar to react-redux connect. The keys of this object will be used to connect data returned from from promise to corresponding prop in the component.
+The interface is similar to react-redux connect. The key of each asyncItem object will be used to connect data returned from from promise to corresponding prop in the component.
 So in example above you'll have this.props.lunches
 
-The value of each key should be function, that accepts params from router and helpers. Redux store exists in helpers by default.
-This function can return:
+The value of each ayncItem 'key' should be a string identifier which will become a key on reduxAsyncConnect redux state tree.
+The value of each asyncItem 'promise' should *usually be a promise* that accepts params from router and helpers
+
+...it also accepts State. Params has more than just router params, which are actually params.params. @makeomatic, can you clarify documentation? See your comment: https://github.com/Rezonans/redux-async-connect/issues/16#issuecomment-184404969.
+
+Redux store exists in helpers by default.
+This 'promise' function can return:
 - _**undefined**_ In this case we'll do nothing
-- _**promise**_ In this case we'll store data from this promise to redux state to appropriate key and will ask ReduxAsyncConnect to delay rendering
-- _**other value**_ In this case we'll store this data to redux state to appropriate key immediately
+- _**promise**_ In this case ReduxAsyncConnect will DELAY RENDERING before storing data from this promise to redux state to appropriate key.
+- _**other value**_ In this case we will NOT DELAY RENDERING and instead immediately store this data to redux state to appropriate key.
 
 ## reducer
 This reducer MUST be mounted to `reduxAsyncConnect` key in combineReducers.
