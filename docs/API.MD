@@ -29,8 +29,7 @@ asyncConnect(AsyncProps: Array, mapStateToProps?, mapDispatchToProps?, mergeProp
 
 Signature now corresponds to [react-redux connect](https://github.com/reactjs/react-redux/blob/master/docs/api.md#connectmapstatetoprops-mapdispatchtoprops-mergeprops-options)
 
-This is the function that uses to decorate your container components that is connected with router.
-It should provide mapStateToProps object like that:
+This function is used to decorate your container components that are connected to the router. It should provide a `mapStateToProps` object as follows:
 
 ```js
 @asyncConnect([{
