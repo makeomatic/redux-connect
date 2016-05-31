@@ -29,10 +29,12 @@ export default class AsyncConnect extends Component {
       propsToShow: this.isLoaded() ? props : null,
     };
 
+    this.mounted = false;
     this.loadDataCounter = 0;
   }
 
   componentDidMount() {
+    this.mounted = true;
     const dataLoaded = this.isLoaded();
 
     // we dont need it if we already made it on server-side
@@ -49,6 +51,10 @@ export default class AsyncConnect extends Component {
     return this.state.propsToShow !== nextState.propsToShow;
   }
 
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
   isLoaded() {
     return this.context.store.getState().reduxAsyncConnect.loaded;
   }
@@ -62,10 +68,10 @@ export default class AsyncConnect extends Component {
     this.props.beginGlobalLoad();
     return (loadDataCounterOriginal => loadResult.then(() => {
       // We need to change propsToShow only if loadAsyncData that called this promise
-      // is the last invocation of loadAsyncData method. Otherwise we can face situation
+      // is the last invocation of loadAsyncData method. Otherwise we can face a situation
       // when user is changing route several times and we finally show him route that has
       // loaded props last time and not the last called route
-      if (this.loadDataCounter === loadDataCounterOriginal) {
+      if (this.loadDataCounter === loadDataCounterOriginal && this.mounted !== false) {
         this.setState({ propsToShow: props });
       }
 
