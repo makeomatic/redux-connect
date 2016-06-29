@@ -56,7 +56,7 @@ export default class AsyncConnect extends Component {
   }
 
   isLoaded() {
-    return this.context.store.getState().reduxAsyncConnect.loaded;
+    return this.context.store.getState().get('reduxAsyncConnect').get('loaded');
   }
 
   loadAsyncData(props) {
