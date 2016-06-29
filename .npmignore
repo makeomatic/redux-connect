@@ -2,5 +2,4 @@
 .eslintrc
 scripts
 .idea
-modules
 __tests__
