@@ -63,6 +63,7 @@
   },
   "dependencies": {
     "redux-actions": "^0.9.1",
+    "immutable": "^3.7.6",
     "babel-runtime": "~6.x.x"
   },
   "jest": {
