@@ -1,4 +1,6 @@
 node_modules
-lib
 .idea
+modules
+__test__
+docs
 npm-debug.log
