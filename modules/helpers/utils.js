@@ -92,7 +92,7 @@ export function loadAsyncConnect({ components, filter = () => true, ...rest }) {
     const results = asyncItems.reduce((itemsResults, item) => {
       // initiate the promise with or without blocking
       let promiseOrResult = item.promise(rest);
-      
+
       if (filter(item, component)) {
         if (isPromise(promiseOrResult)) {
           promiseOrResult = promiseOrResult.catch(error => ({ error }));
