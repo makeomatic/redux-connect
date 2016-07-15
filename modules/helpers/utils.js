@@ -90,9 +90,9 @@ export function loadAsyncConnect({ components, filter = () => true, ...rest }) {
 
     // get array of results
     const results = asyncItems.reduce((itemsResults, item) => {
+      let promiseOrResult = item.promise(rest);
+      
       if (filter(item, component)) {
-        let promiseOrResult = item.promise(rest);
-
         if (isPromise(promiseOrResult)) {
           promiseOrResult = promiseOrResult.catch(error => ({ error }));
         }
