@@ -44,9 +44,7 @@ export default class AsyncConnect extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (!this.context.store.getState().reduxAsyncConnect.loading) {
-      this.loadAsyncData(nextProps);
-    }
+    this.loadAsyncData(nextProps);
   }
 
   shouldComponentUpdate(nextProps, nextState) {

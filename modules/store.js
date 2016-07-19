@@ -17,13 +17,11 @@ export const reducer = handleActions({
   [BEGIN_GLOBAL_LOAD]: (state) => ({
     ...state,
     loaded: false,
-    loading: true,
   }),
 
   [END_GLOBAL_LOAD]: (state) => ({
     ...state,
     loaded: true,
-    loading: false,
   }),
 
   [LOAD]: (state, { payload }) => ({
