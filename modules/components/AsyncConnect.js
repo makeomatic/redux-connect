@@ -1,7 +1,6 @@
 import React, { PropTypes, Component } from 'react';
 import RouterContext from 'react-router/lib/RouterContext';
 import { loadAsyncConnect } from '../helpers/utils';
-import deep from 'deep-get-set';
 
 export default class AsyncConnect extends Component {
   static propTypes = {
@@ -44,6 +43,12 @@ export default class AsyncConnect extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (!this.context.store.getState().reduxAsyncConnect.loading) {
+      this.loadAsyncData(nextProps);
+    }
+  }
+
   shouldComponentUpdate(nextProps, nextState) {
     return this.state.propsToShow !== nextState.propsToShow;
   }
@@ -65,9 +70,9 @@ export default class AsyncConnect extends Component {
       return componentsMemo;
     }, []);
 
+    const loadState = this.context.store.getState().reduxAsyncConnect.loadState;
     const reduxAsyncConnectComponentsLoaded = componentKeys.reduce((loadedMemo, key) =>
-      loadedMemo &&
-      !!deep(this.context.store.getState(), `reduxAsyncConnect.loadState.${key}.loaded`)
+      (loadState[key] ? (loadedMemo && loadState[key].loaded) : false)
     , true);
 
     return this.context.store.getState().reduxAsyncConnect.loaded &&
