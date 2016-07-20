@@ -56,16 +56,16 @@ export default class AsyncConnect extends Component {
   }
 
   isLoaded() {
-    const componentKeys = this.props.components.reduce((componentsMemo, component) => {
+    const componentKeys = this.props.components.reduce((componentKeysMemo, component) => {
       if (component && component.reduxAsyncConnect && component.reduxAsyncConnect.length) {
-        const asyncConnectComponentsWithKeys = component.reduxAsyncConnect
+        const asyncConnectComponentKeys = component.reduxAsyncConnect
           .filter(asyncConnectComponent => !!asyncConnectComponent.key)
           .map(asyncConnectComponent => asyncConnectComponent.key);
 
-        return [...componentsMemo, ...asyncConnectComponentsWithKeys];
+        return [...componentKeysMemo, ...asyncConnectComponentKeys];
       }
 
-      return componentsMemo;
+      return componentKeysMemo;
     }, []);
 
     const loadState = this.context.store.getState().reduxAsyncConnect.loadState;
