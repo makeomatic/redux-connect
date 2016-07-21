@@ -79,7 +79,7 @@ export default class AsyncConnect extends Component {
       // do we need to call this if it's not last invocation?
       this.props.endGlobalLoad();
     }).catch((e) => {
-      console.error('Exception caught by ReduxAsyncConnect: ', e.stack);
+      console.error('Exception caught by ReduxAsyncConnect: ', e.stack || e.toString());
     }))(this.loadDataCounter);
   }
 
