@@ -1,6 +1,7 @@
 import React, { PropTypes, Component } from 'react';
 import RouterContext from 'react-router/lib/RouterContext';
 import { loadAsyncConnect } from '../helpers/utils';
+import { getMutableState } from '../helpers/state';
 
 export default class AsyncConnect extends Component {
   static propTypes = {
@@ -10,6 +11,7 @@ export default class AsyncConnect extends Component {
     beginGlobalLoad: PropTypes.func.isRequired,
     endGlobalLoad: PropTypes.func.isRequired,
     helpers: PropTypes.any,
+    reloadOnPropsChange: PropTypes.func,
   };
 
   static contextTypes = {
@@ -17,6 +19,7 @@ export default class AsyncConnect extends Component {
   };
 
   static defaultProps = {
+    reloadOnPropsChange() { return true; },
     render(props) {
       return <RouterContext {...props} />;
     },
@@ -44,7 +47,10 @@ export default class AsyncConnect extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.loadAsyncData(nextProps);
+    // Allow a user supplied function to determine if an async reload is necessary
+    if (this.props.reloadOnPropsChange(this.props, nextProps)) {
+      this.loadAsyncData(nextProps);
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -56,7 +62,7 @@ export default class AsyncConnect extends Component {
   }
 
   isLoaded() {
-    return this.context.store.getState().reduxAsyncConnect.loaded;
+    return getMutableState(this.context.store.getState()).reduxAsyncConnect.loaded;
   }
 
   loadAsyncData(props) {
