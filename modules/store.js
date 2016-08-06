@@ -13,76 +13,75 @@ const initialState = {
   loadState: {},
 };
 
-export const reducer = function reducer(immutableState, action) {
-  // Convert our immutable state to a mutable state (or leave it undefined)
-  const mutableState = immutableState !== undefined ?
-    getMutableState(immutableState) : immutableState;
+const reduxAsyncReducer = handleActions({
+  [BEGIN_GLOBAL_LOAD]: (state) => ({
+    ...state,
+    loaded: false,
+  }),
 
-  const finalState = handleActions({
+  [END_GLOBAL_LOAD]: (state) => ({
+    ...state,
+    loaded: true,
+  }),
 
-    [BEGIN_GLOBAL_LOAD]: (state) => ({
-      ...state,
-      loaded: false,
-    }),
-
-    [END_GLOBAL_LOAD]: (state) => ({
-      ...state,
-      loaded: true,
-    }),
-
-    [LOAD]: (state, { payload }) => ({
-      ...state,
-      loadState: {
-        ...state.loadState,
-        [payload.key]: {
-          loading: true,
-          loaded: false,
-        },
+  [LOAD]: (state, { payload }) => ({
+    ...state,
+    loadState: {
+      ...state.loadState,
+      [payload.key]: {
+        loading: true,
+        loaded: false,
       },
-    }),
+    },
+  }),
 
-    [LOAD_SUCCESS]: (state, { payload: { key, data } }) => ({
-      ...state,
-      loadState: {
-        ...state.loadState,
-        [key]: {
-          loading: false,
-          loaded: true,
-          error: null,
-        },
+  [LOAD_SUCCESS]: (state, { payload: { key, data } }) => ({
+    ...state,
+    loadState: {
+      ...state.loadState,
+      [key]: {
+        loading: false,
+        loaded: true,
+        error: null,
       },
-      [key]: data,
-    }),
+    },
+    [key]: data,
+  }),
 
-    [LOAD_FAIL]: (state, { payload: { key, error } }) => ({
-      ...state,
-      loadState: {
-        ...state.loadState,
-        [key]: {
-          loading: false,
-          loaded: false,
-          error,
-        },
+  [LOAD_FAIL]: (state, { payload: { key, error } }) => ({
+    ...state,
+    loadState: {
+      ...state.loadState,
+      [key]: {
+        loading: false,
+        loaded: false,
+        error,
       },
-    }),
+    },
+  }),
 
-    [CLEAR]: (state, { payload }) => ({
-      ...state,
-      loadState: {
-        ...state.loadState,
-        [payload]: {
-          loading: false,
-          loaded: false,
-          error: null,
-        },
+  [CLEAR]: (state, { payload }) => ({
+    ...state,
+    loadState: {
+      ...state.loadState,
+      [payload]: {
+        loading: false,
+        loaded: false,
+        error: null,
       },
-      [payload]: null,
-    }),
+    },
+    [payload]: null,
+  }),
 
-  }, initialState)(mutableState, action);
+}, initialState);
 
-  // Make sure we return an immutable state if a custom immutable state method is passed
-  return getImmutableState(finalState);
+export const reducer = function wrappedReducer(state, action) {
+  // if state is undefined then it can't be converted to mutable
+  let mutableState = state;
+  if (mutableState !== undefined) {
+    mutableState = getMutableState(state);
+  }
+  return getImmutableState(reduxAsyncReducer(mutableState, action));
 };
 
 export const clearKey = createAction(CLEAR);
