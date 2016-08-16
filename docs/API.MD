@@ -33,13 +33,26 @@ This function is used to decorate your container components that are connected t
 
 ```js
 @asyncConnect([{
-  key: 'lunches',
-  promise: (params, helpers) => helpers.client.get('/lunches'),
+  promise: ({ store: { dispatch, getState }, helpers }) => (
+    helpers.client.get('/lunches')
+  ),
 }])
 export default class Home extends Component {
   // ...
 }
 ```
+
+`AsyncProps` is an array of objects with a method called `promise`. `promise`
+accepts a single object as an option. The option includes the following keys:
+
+* store - Includes methods `dispatch` and `getState`
+* params - the route params
+* helpers - Any helpers you have passed from `loadOnServer`
+* matchContext
+* router
+* history
+* location
+* routes
 
 The interface is similar to react-redux connect. The keys of this object will be used to connect data returned from from promise to corresponding prop in the component.
 So in example above you'll have this.props.lunches
