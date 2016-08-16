@@ -45,14 +45,14 @@ export default class Home extends Component {
 `AsyncProps` is an array of objects with a method called `promise`. `promise`
 accepts a single object as an option. The option includes the following keys:
 
-* store - Includes methods `dispatch` and `getState`
-* params - the route params
-* helpers - Any helpers you have passed from `loadOnServer`
-* matchContext
-* router
-* history
-* location
-* routes
+* _**store** - Includes methods `dispatch` and `getState`
+* _**params** - the route params
+* _**helpers** - Any helpers you have passed from `loadOnServer`
+* _**matchContext**
+* _**router**
+* _**history**
+* _**location**
+* _**routes**
 
 The interface is similar to react-redux connect. The keys of this object will be used to connect data returned from from promise to corresponding prop in the component.
 So in example above you'll have this.props.lunches
