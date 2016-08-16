@@ -76,7 +76,7 @@ export function filterAndFlattenComponents(components) {
  * @param  {Function} [data.filter] - filtering function
  * @return {Promise}
  */
-export function loadAsyncConnect({ components, filter = () => true, ...rest }) {
+export function loadAsyncConnect({ components = [], filter = () => true, ...rest }) {
   const flattened = filterAndFlattenComponents(components);
 
   if (flattened.length === 0) {
