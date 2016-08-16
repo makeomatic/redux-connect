@@ -19,7 +19,9 @@ export default class AsyncConnect extends Component {
   };
 
   static defaultProps = {
-    reloadOnPropsChange() { return true; },
+    reloadOnPropsChange() {
+      return true;
+    },
     render(props) {
       return <RouterContext {...props} />;
     },
