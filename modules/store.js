@@ -75,12 +75,19 @@ const reduxAsyncReducer = handleActions({
 
 }, initialState);
 
-export const reducer = function wrappedReducer(state, action) {
-  // if state is undefined then it can't be converted to mutable
-  let mutableState = state;
-  if (mutableState !== undefined) {
-    mutableState = getMutableState(state);
+export const reducer = function wrappedReducer(immutableState, action) {
+  // We need to convert immutable state to mutable state before our reducer can act upon it
+  let mutableState;
+  if (immutableState === undefined) {
+    // if state is undefined (no initial state yet) then we can't convert it, so let the
+    // reducer set the initial state for us
+    mutableState = immutableState;
+  } else {
+    // Convert immutable state to mutable state so our reducer will accept it
+    mutableState = getMutableState(immutableState);
   }
+
+  // Run the reducer and then re-convert the mutable output state back to immutable state
   return getImmutableState(reduxAsyncReducer(mutableState, action));
 };
 
