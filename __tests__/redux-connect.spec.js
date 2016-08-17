@@ -16,6 +16,7 @@ import AsyncConnect from '../modules/components/AsyncConnect';
 import {
   asyncConnect,
   reducer as reduxAsyncConnect,
+  immutableReducer,
   loadOnServer,
 } from '../modules/index';
 
@@ -254,7 +255,9 @@ describe('<ReduxAsyncConnect />', function suite() {
 
   pit('properly fetches data on the server when using immutable data structures', function test() {
     // We use a special reducer built for handling immutable js data
-    const immutableReducers = combineImmutableReducers({ reduxAsyncConnect });
+    const immutableReducers = combineImmutableReducers({
+      reduxAsyncConnect: immutableReducer
+    });
 
     // We need to re-wrap the component so the mapStateToProps expects immutable js data
     const ImmutableWrappedApp = asyncConnect([{

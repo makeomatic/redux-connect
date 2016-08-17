@@ -146,16 +146,20 @@ const render = applyRouterMiddleware(...middleware);
 
 ## Usage with `ImmutableJS`
 
-This lib can be used with ImmutableJS or any other immutability lib by providing methods that convert the state between mutable and immutable data.
+This lib can be used with ImmutableJS or any other immutability lib by providing methods that convert the state between mutable and immutable data. Along with those methods, there is also a special immutable reducer that needs to be used instead of the normal reducer.
 
 ```js
-import { setToImmutableStateFunc, setToMutableStateFunc } from 'redux-connect';
+import { setToImmutableStateFunc, setToMutableStateFunc, immutableReducer as reduxAsyncConnect } from 'redux-connect';
 
 // Set the mutability/immutability functions
 setToImmutableStateFunc((mutableState) => Immutable.fromJS(mutableState));
 setToMutableStateFunc((immutableState) => immutableState.toJS());
 
 // Thats all, now just use redux-connect as normal
+export const rootReducer = combineReducers({
+  reduxAsyncConnect,
+  ...
+})
 ```
 
 **React Router Issue**
