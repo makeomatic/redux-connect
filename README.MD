@@ -69,6 +69,7 @@ import { ReduxAsyncConnect, loadOnServer, reducer as reduxAsyncConnect } from 'r
 import createHistory from 'history/lib/createMemoryHistory';
 import { Provider } from 'react-redux';
 import { createStore, combineReducers } from 'redux';
+import serialize from 'serialize-javascript';
 
 app.get('*', (req, res) => {
   const store = createStore(combineReducers({ reduxAsyncConnect }));
@@ -216,6 +217,7 @@ until data is loaded.
 
 ## Contributors
 - [Vitaly Aminev](https://en.makeomatic.ru)
+- [Todd Bluhm](https://github.com/toddbluhm)
 - [Eliseu Monar](https://github.com/eliseumds)
 - [Rui Araújo](https://github.com/ruiaraujo)
 - [Rodion Salnik](https://github.com/sars)

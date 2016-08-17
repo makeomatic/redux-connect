@@ -3,7 +3,7 @@ import RouterContext from 'react-router/lib/RouterContext';
 import { loadAsyncConnect } from '../helpers/utils';
 import { getMutableState } from '../helpers/state';
 
-export default class AsyncConnect extends Component {
+export class AsyncConnect extends Component {
   static propTypes = {
     components: PropTypes.array.isRequired,
     params: PropTypes.object.isRequired,
@@ -94,3 +94,5 @@ export default class AsyncConnect extends Component {
     return propsToShow && this.props.render(propsToShow);
   }
 }
+
+export default AsyncConnect;

@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types, new-cap */
 import Promise from 'bluebird';
 import React from 'react';
 import { Provider, connect } from 'react-redux';
@@ -24,14 +23,37 @@ describe('<ReduxAsyncConnect />', function suite() {
   const initialState = {
     reduxAsyncConnect: { loaded: false, loadState: {}, $$external: 'supported' },
   };
+
   const endGlobalLoadSpy = spy(endGlobalLoad);
   const beginGlobalLoadSpy = spy(beginGlobalLoad);
+
   const ReduxAsyncConnect = connect(null, {
     beginGlobalLoad: beginGlobalLoadSpy,
     endGlobalLoad: endGlobalLoadSpy,
   })(AsyncConnect);
+
   const renderReduxAsyncConnect = props => <ReduxAsyncConnect {...props} />;
-  const App = ({ ...rest, lunch }) => <div {...rest}>{lunch}</div>;
+
+  /* eslint-disable no-unused-vars */
+  const App = ({
+    // NOTE: use this as a reference of props passed to your component from router
+    // these are the params that are passed from router
+    history,
+    location,
+    params,
+    route,
+    routeParams,
+    routes,
+    externalState,
+    remappedProp,
+    // our param
+    lunch,
+    // react-redux dispatch prop
+    dispatch,
+    ...rest,
+  }) => <div {...rest}>{lunch}</div>;
+  /* eslint-enable no-unused-vars */
+
   const WrappedApp = asyncConnect([{
     key: 'lunch',
     promise: () => Promise.resolve('sandwich'),
@@ -42,8 +64,10 @@ describe('<ReduxAsyncConnect />', function suite() {
     externalState: state.reduxAsyncConnect.$$external,
     remappedProp: ownProps.route.remap,
   }))(App);
+
   const UnwrappedApp = () => <div>Hi, I do not use @asyncConnect</div>;
   const reducers = combineReducers({ reduxAsyncConnect });
+
   const routes = (
     <Route path="/">
       <IndexRoute component={WrappedApp} remap="on" />
@@ -256,7 +280,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   pit('properly fetches data on the server when using immutable data structures', function test() {
     // We use a special reducer built for handling immutable js data
     const immutableReducers = combineImmutableReducers({
-      reduxAsyncConnect: immutableReducer
+      reduxAsyncConnect: immutableReducer,
     });
 
     // We need to re-wrap the component so the mapStateToProps expects immutable js data

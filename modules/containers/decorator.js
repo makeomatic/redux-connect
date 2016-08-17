@@ -77,3 +77,6 @@ export function asyncConnect(asyncItems, mapStateToProps, mapDispatchToProps, me
     return connect(finalMapStateToProps, mapDispatchToProps, mergeProps, options)(Component);
   };
 }
+
+// convinience export
+export default asyncConnect;
