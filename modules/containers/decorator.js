@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { isPromise } from '../helpers/utils';
 import { load, loadFail, loadSuccess } from '../store';
+import { getMutableState, getImmutableState } from '../helpers/state';
 
 /**
  * Wraps react components with data loaders
@@ -51,6 +52,7 @@ export function asyncConnect(asyncItems, mapStateToProps, mapDispatchToProps, me
     Component.reduxAsyncConnect = wrapWithDispatch(asyncItems);
 
     const finalMapStateToProps = (state, ownProps) => {
+      const mutableState = getMutableState(state);
       const asyncStateToProps = asyncItems.reduce((result, { key }) => {
         if (!key) {
           return result;
@@ -58,7 +60,7 @@ export function asyncConnect(asyncItems, mapStateToProps, mapDispatchToProps, me
 
         return {
           ...result,
-          [key]: state.reduxAsyncConnect[key],
+          [key]: mutableState.reduxAsyncConnect[key],
         };
       }, {});
 
@@ -67,7 +69,7 @@ export function asyncConnect(asyncItems, mapStateToProps, mapDispatchToProps, me
       }
 
       return {
-        ...mapStateToProps(state, ownProps),
+        ...mapStateToProps(getImmutableState(mutableState), ownProps),
         ...asyncStateToProps,
       };
     };
