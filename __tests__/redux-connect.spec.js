@@ -1,11 +1,13 @@
-/* eslint-disable react/prop-types */
 import Promise from 'bluebird';
 import React from 'react';
 import { Provider, connect } from 'react-redux';
 import { Router, createMemoryHistory, match, Route, IndexRoute } from 'react-router';
 import { createStore, combineReducers } from 'redux';
+import { combineReducers as combineImmutableReducers } from 'redux-immutable';
 import { mount, render } from 'enzyme';
 import { spy } from 'sinon';
+import { default as Immutable } from 'immutable';
+import { setToImmutableStateFunc, setToMutableStateFunc } from '../modules/helpers/state';
 
 // import module
 import { endGlobalLoad, beginGlobalLoad } from '../modules/store';
@@ -13,6 +15,7 @@ import AsyncConnect from '../modules/components/AsyncConnect';
 import {
   asyncConnect,
   reducer as reduxAsyncConnect,
+  immutableReducer,
   loadOnServer,
 } from '../modules/index';
 
@@ -20,14 +23,37 @@ describe('<ReduxAsyncConnect />', function suite() {
   const initialState = {
     reduxAsyncConnect: { loaded: false, loadState: {}, $$external: 'supported' },
   };
+
   const endGlobalLoadSpy = spy(endGlobalLoad);
   const beginGlobalLoadSpy = spy(beginGlobalLoad);
+
   const ReduxAsyncConnect = connect(null, {
     beginGlobalLoad: beginGlobalLoadSpy,
     endGlobalLoad: endGlobalLoadSpy,
   })(AsyncConnect);
+
   const renderReduxAsyncConnect = props => <ReduxAsyncConnect {...props} />;
-  const App = ({ ...rest, lunch }) => <div {...rest}>{lunch}</div>;
+
+  /* eslint-disable no-unused-vars */
+  const App = ({
+    // NOTE: use this as a reference of props passed to your component from router
+    // these are the params that are passed from router
+    history,
+    location,
+    params,
+    route,
+    routeParams,
+    routes,
+    externalState,
+    remappedProp,
+    // our param
+    lunch,
+    // react-redux dispatch prop
+    dispatch,
+    ...rest,
+  }) => <div {...rest}>{lunch}</div>;
+  /* eslint-enable no-unused-vars */
+
   const WrappedApp = asyncConnect([{
     key: 'lunch',
     promise: () => Promise.resolve('sandwich'),
@@ -38,8 +64,10 @@ describe('<ReduxAsyncConnect />', function suite() {
     externalState: state.reduxAsyncConnect.$$external,
     remappedProp: ownProps.route.remap,
   }))(App);
+
   const UnwrappedApp = () => <div>Hi, I do not use @asyncConnect</div>;
   const reducers = combineReducers({ reduxAsyncConnect });
+
   const routes = (
     <Route path="/">
       <IndexRoute component={WrappedApp} remap="on" />
@@ -48,7 +76,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   );
 
   // inter-test state
-  let state;
+  let testState;
 
   pit('properly fetches data on the server', function test() {
     return new Promise((resolve, reject) => {
@@ -76,13 +104,13 @@ describe('<ReduxAsyncConnect />', function suite() {
           );
 
           expect(html.text()).toContain('sandwich');
-          state = store.getState();
-          expect(state.reduxAsyncConnect.loaded).toBe(true);
-          expect(state.reduxAsyncConnect.lunch).toBe('sandwich');
-          expect(state.reduxAsyncConnect.action).toBe('yammi');
-          expect(state.reduxAsyncConnect.loadState.lunch.loading).toBe(false);
-          expect(state.reduxAsyncConnect.loadState.lunch.loaded).toBe(true);
-          expect(state.reduxAsyncConnect.loadState.lunch.error).toBe(null);
+          testState = store.getState();
+          expect(testState.reduxAsyncConnect.loaded).toBe(true);
+          expect(testState.reduxAsyncConnect.lunch).toBe('sandwich');
+          expect(testState.reduxAsyncConnect.action).toBe('yammi');
+          expect(testState.reduxAsyncConnect.loadState.lunch.loading).toBe(false);
+          expect(testState.reduxAsyncConnect.loadState.lunch.loaded).toBe(true);
+          expect(testState.reduxAsyncConnect.loadState.lunch.error).toBe(null);
           expect(eat.calledOnce).toBe(true);
 
           // global loader spy
@@ -99,7 +127,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   });
 
   it('properly picks data up from the server', function test() {
-    const store = createStore(reducers, state);
+    const store = createStore(reducers, testState);
     const history = createMemoryHistory();
     const proto = ReduxAsyncConnect.WrappedComponent.prototype;
     const eat = spy(() => 'yammi');
@@ -231,10 +259,89 @@ describe('<ReduxAsyncConnect />', function suite() {
           );
 
           expect(html.text()).toContain('I do not use @asyncConnect');
-          state = store.getState();
-          expect(state.reduxAsyncConnect.loaded).toBe(true);
-          expect(state.reduxAsyncConnect.lunch).toBe(undefined);
+          testState = store.getState();
+          expect(testState.reduxAsyncConnect.loaded).toBe(true);
+          expect(testState.reduxAsyncConnect.lunch).toBe(undefined);
           expect(eat.called).toBe(false);
+
+          // global loader spy
+          expect(endGlobalLoadSpy.called).toBe(false);
+          expect(beginGlobalLoadSpy.called).toBe(false);
+          endGlobalLoadSpy.reset();
+          beginGlobalLoadSpy.reset();
+
+          resolve();
+        })
+        .catch(reject);
+      });
+    });
+  });
+
+  pit('properly fetches data on the server when using immutable data structures', function test() {
+    // We use a special reducer built for handling immutable js data
+    const immutableReducers = combineImmutableReducers({
+      reduxAsyncConnect: immutableReducer,
+    });
+
+    // We need to re-wrap the component so the mapStateToProps expects immutable js data
+    const ImmutableWrappedApp = asyncConnect([{
+      key: 'lunch',
+      promise: () => Promise.resolve('sandwich'),
+    }, {
+      key: 'action',
+      promise: ({ helpers }) => Promise.resolve(helpers.eat()),
+    }], (state, ownProps) => ({
+      externalState: state.getIn(['reduxAsyncConnect', '$$external']),  // use immutablejs methods
+      remappedProp: ownProps.route.remap,
+    }))(App);
+
+    // Custom routes using our custom immutable wrapped component
+    const immutableRoutes = (
+      <Route path="/">
+        <IndexRoute component={ImmutableWrappedApp} remap="on" />
+        <Route path="/notconnected" component={UnwrappedApp} />
+      </Route>
+    );
+
+    // Set the mutability/immutability functions
+    setToImmutableStateFunc((mutableState) => Immutable.fromJS(mutableState));
+    setToMutableStateFunc((immutableState) => immutableState.toJS());
+
+    return new Promise((resolve, reject) => {
+      // Create the store with initial immutable data
+      const store = createStore(immutableReducers, Immutable.Map({}));
+      const eat = spy(() => 'yammi');
+
+      // Use the custom immutable routes
+      match({ routes: immutableRoutes, location: '/' }, (err, redirect, renderProps) => {
+        if (err) {
+          return reject(err);
+        }
+
+        if (redirect) {
+          return reject(new Error('redirected'));
+        }
+
+        if (!renderProps) {
+          return reject(new Error('404'));
+        }
+
+        return loadOnServer({ ...renderProps, store, helpers: { eat } }).then(() => {
+          const html = render(
+            <Provider store={store} key="provider">
+              <ReduxAsyncConnect {...renderProps} />
+            </Provider>
+          );
+
+          expect(html.text()).toContain('sandwich');
+          testState = store.getState().toJS();  // convert to plain js for assertions
+          expect(testState.reduxAsyncConnect.loaded).toBe(true);
+          expect(testState.reduxAsyncConnect.lunch).toBe('sandwich');
+          expect(testState.reduxAsyncConnect.action).toBe('yammi');
+          expect(testState.reduxAsyncConnect.loadState.lunch.loading).toBe(false);
+          expect(testState.reduxAsyncConnect.loadState.lunch.loaded).toBe(true);
+          expect(testState.reduxAsyncConnect.loadState.lunch.error).toBe(null);
+          expect(eat.calledOnce).toBe(true);
 
           // global loader spy
           expect(endGlobalLoadSpy.called).toBe(false);
