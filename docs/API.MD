@@ -43,7 +43,14 @@ export default class Home extends Component {
 ```
 
 `AsyncProps` is an array of objects with a method called `promise`. `promise`
-accepts a single object as an option. The option includes the following keys:
+accepts a single object as an option.
+
+Given that you are using `loadOnServer` as follows with the current version of
+react-router (v2.7.0 at the time of writing),
+
+    loadOnServer({ ...renderProps, store, helpers: { client } })
+
+the option can include the following keys:
 
 * _**store** - Includes methods `dispatch` and `getState`
 * _**params** - the route params
