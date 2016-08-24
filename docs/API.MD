@@ -33,13 +33,33 @@ This function is used to decorate your container components that are connected t
 
 ```js
 @asyncConnect([{
-  key: 'lunches',
-  promise: (params, helpers) => helpers.client.get('/lunches'),
+  promise: ({ store: { dispatch, getState }, helpers }) => (
+    helpers.client.get('/lunches')
+  ),
 }])
 export default class Home extends Component {
   // ...
 }
 ```
+
+`AsyncProps` is an array of objects with a method called `promise`. `promise`
+accepts a single object as an option.
+
+Given that you are using `loadOnServer` as follows with the current version of
+react-router (v2.7.0 at the time of writing),
+
+    loadOnServer({ ...renderProps, store, helpers: { client } })
+
+the option can include the following keys:
+
+* _**store** - Includes methods `dispatch` and `getState`
+* _**params** - the route params
+* _**helpers** - Any helpers you have passed from `loadOnServer`
+* _**matchContext**
+* _**router**
+* _**history**
+* _**location**
+* _**routes**
 
 The interface is similar to react-redux connect. The keys of this object will be used to connect data returned from from promise to corresponding prop in the component.
 So in example above you'll have this.props.lunches
