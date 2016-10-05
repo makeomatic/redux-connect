@@ -6,6 +6,7 @@ import { getMutableState } from '../helpers/state';
 export class AsyncConnect extends Component {
   static propTypes = {
     render: PropTypes.func.isRequired,
+    error: PropTypes.func,
     beginGlobalLoad: PropTypes.func.isRequired,
     endGlobalLoad: PropTypes.func.isRequired,
     reloadOnPropsChange: PropTypes.func,
@@ -27,6 +28,7 @@ export class AsyncConnect extends Component {
     render(props) {
       return <RouterContext {...props} />;
     },
+    error: typeof console.error === 'function' ? console.error : () => {}, //eslint-disable-line no-console
   };
 
   constructor(props, context) {
@@ -46,14 +48,14 @@ export class AsyncConnect extends Component {
 
     // we dont need it if we already made it on server-side
     if (!dataLoaded) {
-      this.loadAsyncData(this.props);
+      this.loadAsyncData(this.props).catch(this.props.error);
     }
   }
 
   componentWillReceiveProps(nextProps) {
     // Allow a user supplied function to determine if an async reload is necessary
     if (this.props.reloadOnPropsChange(this.props, nextProps)) {
-      this.loadAsyncData(nextProps);
+      this.loadAsyncData(nextProps).catch(nextProps.error);
     }
   }
 
