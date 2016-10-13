@@ -70,6 +70,35 @@ export function filterAndFlattenComponents(components) {
 }
 
 /**
+ * Returns an array of an array of components on the same layers that are wrapped
+ * with reduxAsyncConnect
+ * @param  {Array} components
+ * @return {Array}
+ */
+export function filterAndLayerComponents(components) {
+  const layered = [];
+  const l = components.length;
+  for (let i = 0; i < l; i++) {
+    const component = components[i];
+    if (typeof component === 'object') {
+      const keys = Object.keys(component);
+      const componentLayer = [];
+      keys.forEach(key => {
+        if (component[key] && component[key].reduxAsyncConnect) {
+          componentLayer.push(component[key]);
+        }
+      });
+      if (componentLayer.length > 0) {
+        layered.push(componentLayer);
+      }
+    } else if (component && component.reduxAsyncConnect) {
+      layered.push([component]);
+    }
+  }
+  return layered;
+}
+
+/**
  * Function that accepts components with reduxAsyncConnect definitions
  * and loads data
  * @param  {Object} data.components
@@ -77,35 +106,45 @@ export function filterAndFlattenComponents(components) {
  * @return {Promise}
  */
 export function loadAsyncConnect({ components = [], filter = () => true, ...rest }) {
-  const flattened = filterAndFlattenComponents(components);
+  const layered = filterAndLayerComponents(components);
 
-  if (flattened.length === 0) {
+  if (layered.length === 0) {
     return Promise.resolve();
   }
 
   // this allows us to have nested promises, that rely on each other's completion
   // cycle
-  return mapSeries(flattened, component => {
-    const asyncItems = component.reduxAsyncConnect;
+  return mapSeries(layered, componentArr => {
+    if (componentArr.length === 0) {
+      return Promise.resolve();
+    }
+    // Collect the results of each component on current layer.
+    const results = [];
+    const asyncItemsArr = [];
+    for (let i = 0; i < componentArr.length; i++) {
+      const component = componentArr[i];
+      const asyncItems = component.reduxAsyncConnect;
+      asyncItemsArr.push(...asyncItems);
 
-    // get array of results
-    const results = asyncItems.reduce((itemsResults, item) => {
-      if (filter(item, component)) {
-        let promiseOrResult = item.promise(rest);
+      // get array of results
+      results.push(...asyncItems.reduce((itemsResults, item) => {
+        if (filter(item, component)) {
+          let promiseOrResult = item.promise(rest);
 
-        if (isPromise(promiseOrResult)) {
-          promiseOrResult = promiseOrResult.catch(error => ({ error }));
+          if (isPromise(promiseOrResult)) {
+            promiseOrResult = promiseOrResult.catch(error => ({ error }));
+          }
+
+          itemsResults.push(promiseOrResult);
         }
 
-        itemsResults.push(promiseOrResult);
-      }
-
-      return itemsResults;
-    }, []);
+        return itemsResults;
+      }, []));
+    }
 
     return Promise.all(results)
       .then(finalResults => finalResults.reduce((finalResult, result, idx) => {
-        const { key } = asyncItems[idx];
+        const { key } = asyncItemsArr[idx];
         if (key) {
           finalResult[key] = result;
         }
