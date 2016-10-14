@@ -52,6 +52,20 @@ describe('<ReduxAsyncConnect />', function suite() {
     dispatch,
     ...rest,
   }) => <div {...rest}>{lunch}</div>;
+
+  const MultiAppA = ({
+    compA,
+    compB,
+    // our param
+    breakfast,
+    // react-redux dispatch prop
+    ...rest,
+  }) => <div><div>{breakfast}</div><div>{compA}</div><div>{compB}</div></div>;
+
+  const MultiAppB = ({
+    dinner,
+    ...rest,
+  }) => <div>{dinner}</div>;
   /* eslint-enable no-unused-vars */
 
   const WrappedApp = asyncConnect([{
@@ -65,6 +79,28 @@ describe('<ReduxAsyncConnect />', function suite() {
     remappedProp: ownProps.route.remap,
   }))(App);
 
+  const WrappedAppA = asyncConnect([{
+    key: 'breakfast',
+    promise: () => Promise.resolve('omelette'),
+  }, {
+    key: 'action',
+    promise: ({ helpers }) => Promise.resolve(helpers.eat('breakfast')),
+  }], (state, ownProps) => ({
+    externalState: state.reduxAsyncConnect.$$external,
+    compA: ownProps.compA,
+    compB: ownProps.compB,
+  }))(MultiAppA);
+
+  const WrappedAppB = asyncConnect([{
+    key: 'dinner',
+    promise: () => Promise.resolve('chicken'),
+  }, {
+    key: 'action',
+    promise: ({ helpers }) => Promise.resolve(helpers.eat('dinner')),
+  }], (state, ownProps) => ({
+    externalState: state.reduxAsyncConnect.$$external
+  }))(MultiAppB);
+
   const UnwrappedApp = () => <div>Hi, I do not use @asyncConnect</div>;
   const reducers = combineReducers({ reduxAsyncConnect });
 
@@ -72,6 +108,9 @@ describe('<ReduxAsyncConnect />', function suite() {
     <Route path="/">
       <IndexRoute component={WrappedApp} remap="on" />
       <Route path="/notconnected" component={UnwrappedApp} />
+      <Route path="/multi" component={WrappedAppA}>
+        <IndexRoute components={{ compA: UnwrappedApp, compB: WrappedAppB }} />
+      </Route>
     </Route>
   );
 
@@ -263,6 +302,65 @@ describe('<ReduxAsyncConnect />', function suite() {
           expect(testState.reduxAsyncConnect.loaded).toBe(true);
           expect(testState.reduxAsyncConnect.lunch).toBe(undefined);
           expect(eat.called).toBe(false);
+
+          // global loader spy
+          expect(endGlobalLoadSpy.called).toBe(false);
+          expect(beginGlobalLoadSpy.called).toBe(false);
+          endGlobalLoadSpy.reset();
+          beginGlobalLoadSpy.reset();
+
+          resolve();
+        })
+        .catch(reject);
+      });
+    });
+  });
+
+  pit('properly fetches data in the correct order given a nested routing structure', function test() {
+    return new Promise((resolve, reject) => {
+      const store = createStore(reducers);
+      const promiseOrder = [];
+      const eat = spy(meal => {
+        promiseOrder.push(meal);
+        return `yammi ${meal}`;
+      });
+
+      match({ routes, location: '/multi' }, (err, redirect, renderProps) => {
+        if (err) {
+          return reject(err);
+        }
+
+        if (redirect) {
+          return reject(new Error('redirected'));
+        }
+
+        if (!renderProps) {
+          return reject(new Error('404'));
+        }
+
+        return loadOnServer({ ...renderProps, store, helpers: { eat } }).then(() => {
+          const html = render(
+            <Provider store={store} key="provider">
+              <ReduxAsyncConnect {...renderProps} />
+            </Provider>
+          );
+
+          expect(html.text()).toContain('omelette');
+          expect(html.text()).toContain('chicken');
+          testState = store.getState();
+          expect(testState.reduxAsyncConnect.loaded).toBe(true);
+          expect(testState.reduxAsyncConnect.breakfast).toBe('omelette');
+          expect(testState.reduxAsyncConnect.dinner).toBe('chicken');
+          expect(testState.reduxAsyncConnect.action).toBe('yammi dinner');
+          expect(testState.reduxAsyncConnect.loadState.dinner.loading).toBe(false);
+          expect(testState.reduxAsyncConnect.loadState.dinner.loaded).toBe(true);
+          expect(testState.reduxAsyncConnect.loadState.dinner.error).toBe(null);
+          expect(testState.reduxAsyncConnect.loadState.breakfast.loading).toBe(false);
+          expect(testState.reduxAsyncConnect.loadState.breakfast.loaded).toBe(true);
+          expect(testState.reduxAsyncConnect.loadState.breakfast.error).toBe(null);
+          expect(eat.calledTwice).toBe(true);
+
+          expect(promiseOrder).toEqual['']
 
           // global loader spy
           expect(endGlobalLoadSpy.called).toBe(false);
