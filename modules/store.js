@@ -14,12 +14,12 @@ const initialState = {
 };
 
 export const reducer = handleActions({
-  [beginGlobalLoad]: (state) => ({
+  [beginGlobalLoad]: state => ({
     ...state,
     loaded: false,
   }),
 
-  [endGlobalLoad]: (state) => ({
+  [endGlobalLoad]: state => ({
     ...state,
     loaded: true,
   }),

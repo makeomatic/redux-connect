@@ -22,8 +22,9 @@ const mapSeries = Promise.mapSeries || function promiseMapSeries(iterable, itera
 
   return Promise.resolve()
     .then(function iterateOverResults() {
-      return iterator(iterable[i], i, iterable).then(result => {
-        results[i++] = result;
+      return iterator(iterable[i], i, iterable).then((result) => {
+        results[i] = result;
+        i += 1;
         if (i < length) {
           return iterateOverResults();
         }
@@ -43,7 +44,7 @@ const mapSeries = Promise.mapSeries || function promiseMapSeries(iterable, itera
  */
 export function eachComponents(components, iterator) {
   const l = components.length;
-  for (let i = 0; i < l; i++) {
+  for (let i = 0; i < l; i += 1) {
     const component = components[i];
     if (typeof component === 'object') {
       const keys = Object.keys(component);
@@ -61,7 +62,7 @@ export function eachComponents(components, iterator) {
  */
 export function filterAndFlattenComponents(components) {
   const flattened = [];
-  eachComponents(components, component => {
+  eachComponents(components, (component) => {
     if (component && component.reduxAsyncConnect) {
       flattened.push(component);
     }
@@ -78,12 +79,12 @@ export function filterAndFlattenComponents(components) {
 export function filterAndLayerComponents(components) {
   const layered = [];
   const l = components.length;
-  for (let i = 0; i < l; i++) {
+  for (let i = 0; i < l; i += 1) {
     const component = components[i];
     if (typeof component === 'object') {
       const keys = Object.keys(component);
       const componentLayer = [];
-      keys.forEach(key => {
+      keys.forEach((key) => {
         if (component[key] && component[key].reduxAsyncConnect) {
           componentLayer.push(component[key]);
         }
@@ -114,14 +115,14 @@ export function loadAsyncConnect({ components = [], filter = () => true, ...rest
 
   // this allows us to have nested promises, that rely on each other's completion
   // cycle
-  return mapSeries(layered, componentArr => {
+  return mapSeries(layered, (componentArr) => {
     if (componentArr.length === 0) {
       return Promise.resolve();
     }
     // Collect the results of each component on current layer.
     const results = [];
     const asyncItemsArr = [];
-    for (let i = 0; i < componentArr.length; i++) {
+    for (let i = 0; i < componentArr.length; i += 1) {
       const component = componentArr[i];
       const asyncItems = component.reduxAsyncConnect;
       asyncItemsArr.push(...asyncItems);

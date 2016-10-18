@@ -5,13 +5,15 @@ import { getMutableState } from '../helpers/state';
 
 export class AsyncConnect extends Component {
   static propTypes = {
-    components: PropTypes.array.isRequired,
-    params: PropTypes.object.isRequired,
     render: PropTypes.func.isRequired,
     beginGlobalLoad: PropTypes.func.isRequired,
     endGlobalLoad: PropTypes.func.isRequired,
-    helpers: PropTypes.any,
     reloadOnPropsChange: PropTypes.func,
+    /* eslint-disable react/forbid-prop-types, react/no-unused-prop-types */
+    components: PropTypes.array.isRequired,
+    params: PropTypes.object.isRequired,
+    helpers: PropTypes.any,
+    /* eslint-enable */
   };
 
   static contextTypes = {
@@ -72,7 +74,7 @@ export class AsyncConnect extends Component {
     const loadResult = loadAsyncConnect({ ...props, store });
 
     // TODO: think of a better solution to a problem?
-    this.loadDataCounter++;
+    this.loadDataCounter += 1;
     this.props.beginGlobalLoad();
     return (loadDataCounterOriginal => loadResult.then(() => {
       // We need to change propsToShow only if loadAsyncData that called this promise

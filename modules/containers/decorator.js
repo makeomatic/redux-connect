@@ -9,7 +9,7 @@ import { getMutableState, getImmutableState } from '../helpers/state';
  * @return {WrappedComponent}
  */
 function wrapWithDispatch(asyncItems) {
-  return asyncItems.map(item => {
+  return asyncItems.map((item) => {
     const key = item.key;
     if (!key) {
       return item;
@@ -17,7 +17,7 @@ function wrapWithDispatch(asyncItems) {
 
     return {
       ...item,
-      promise: options => {
+      promise: (options) => {
         const { store: { dispatch } } = options;
         const next = item.promise(options);
 
@@ -48,7 +48,7 @@ function wrapWithDispatch(asyncItems) {
  * @return {Function}
  */
 export function asyncConnect(asyncItems, mapStateToProps, mapDispatchToProps, mergeProps, options) {
-  return Component => {
+  return (Component) => {
     Component.reduxAsyncConnect = wrapWithDispatch(asyncItems);
 
     const finalMapStateToProps = (state, ownProps) => {
