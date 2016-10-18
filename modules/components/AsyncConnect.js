@@ -12,6 +12,7 @@ export class AsyncConnect extends Component {
     endGlobalLoad: PropTypes.func.isRequired,
     helpers: PropTypes.any,
     reloadOnPropsChange: PropTypes.func,
+    renderLoading: PropTypes.func,
   };
 
   static contextTypes = {
@@ -91,7 +92,11 @@ export class AsyncConnect extends Component {
 
   render() {
     const { propsToShow } = this.state;
-    return propsToShow && this.props.render(propsToShow);
+    if (!propsToShow) {
+      return this.props.renderLoading && this.props.renderLoading(this.props);
+    }
+
+    return this.props.render(propsToShow);
   }
 }
 
