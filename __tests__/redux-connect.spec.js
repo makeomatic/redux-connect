@@ -11,7 +11,7 @@ import { setToImmutableStateFunc, setToMutableStateFunc } from '../modules/helpe
 
 // import module
 import { endGlobalLoad, beginGlobalLoad } from '../modules/store';
-import AsyncConnect from '../modules/components/AsyncConnect';
+import { AsyncConnect } from '../modules/components/AsyncConnect';
 import {
   asyncConnect,
   reducer as reduxAsyncConnect,
@@ -42,6 +42,7 @@ describe('<ReduxAsyncConnect />', function suite() {
     location,
     params,
     route,
+    router,
     routeParams,
     routes,
     externalState,
@@ -50,7 +51,7 @@ describe('<ReduxAsyncConnect />', function suite() {
     lunch,
     // react-redux dispatch prop
     dispatch,
-    ...rest,
+    ...rest
   }) => <div {...rest}>{lunch}</div>;
 
   const MultiAppA = ({
@@ -59,12 +60,12 @@ describe('<ReduxAsyncConnect />', function suite() {
     // our param
     breakfast,
     // react-redux dispatch prop
-    ...rest,
+    ...rest
   }) => <div><div>{breakfast}</div><div>{compA}</div><div>{compB}</div></div>;
 
   const MultiAppB = ({
     dinner,
-    ...rest,
+    ...rest
   }) => <div>{dinner}</div>;
   /* eslint-enable no-unused-vars */
 
@@ -97,8 +98,8 @@ describe('<ReduxAsyncConnect />', function suite() {
   }, {
     key: 'action',
     promise: ({ helpers }) => Promise.resolve(helpers.eat('dinner')),
-  }], (state, ownProps) => ({
-    externalState: state.reduxAsyncConnect.$$external
+  }], state => ({
+    externalState: state.reduxAsyncConnect.$$external,
   }))(MultiAppB);
 
   const UnwrappedApp = () => <div>Hi, I do not use @asyncConnect</div>;
@@ -320,7 +321,7 @@ describe('<ReduxAsyncConnect />', function suite() {
     return new Promise((resolve, reject) => {
       const store = createStore(reducers);
       const promiseOrder = [];
-      const eat = spy(meal => {
+      const eat = spy((meal) => {
         promiseOrder.push(meal);
         return `yammi ${meal}`;
       });
@@ -360,7 +361,7 @@ describe('<ReduxAsyncConnect />', function suite() {
           expect(testState.reduxAsyncConnect.loadState.breakfast.error).toBe(null);
           expect(eat.calledTwice).toBe(true);
 
-          expect(promiseOrder).toEqual['']
+          expect(promiseOrder).toEqual(['breakfast', 'dinner']);
 
           // global loader spy
           expect(endGlobalLoadSpy.called).toBe(false);
@@ -402,8 +403,8 @@ describe('<ReduxAsyncConnect />', function suite() {
     );
 
     // Set the mutability/immutability functions
-    setToImmutableStateFunc((mutableState) => Immutable.fromJS(mutableState));
-    setToMutableStateFunc((immutableState) => immutableState.toJS());
+    setToImmutableStateFunc(mutableState => Immutable.fromJS(mutableState));
+    setToMutableStateFunc(immutableState => immutableState.toJS());
 
     return new Promise((resolve, reject) => {
       // Create the store with initial immutable data
