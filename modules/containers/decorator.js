@@ -21,13 +21,14 @@ function wrapWithDispatch(asyncItems) {
         const { store: { dispatch } } = options;
         const next = item.promise(options);
 
+        // NOTE: possibly refactor this with a breaking change in mind for future versions
+        // we can return result of processed promise/thunk if need be
         if (isPromise(next)) {
           dispatch(load(key));
           // add action dispatchers
-          next.then(
-            data => dispatch(loadSuccess(key, data)),
-            err => dispatch(loadFail(key, err))
-          );
+          next
+            .then(data => dispatch(loadSuccess(key, data)))
+            .catch(err => dispatch(loadFail(key, err)));
         } else if (next) {
           dispatch(loadSuccess(key, next));
         }

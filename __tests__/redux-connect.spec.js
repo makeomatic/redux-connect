@@ -6,7 +6,7 @@ import { createStore, combineReducers } from 'redux';
 import { combineReducers as combineImmutableReducers } from 'redux-immutable';
 import { mount, render } from 'enzyme';
 import { spy } from 'sinon';
-import { default as Immutable } from 'immutable';
+import Immutable from 'immutable';
 import { setToImmutableStateFunc, setToMutableStateFunc } from '../modules/helpers/state';
 
 // import module
@@ -16,7 +16,7 @@ import {
   asyncConnect,
   reducer as reduxAsyncConnect,
   immutableReducer,
-  loadOnServer,
+  loadOnServer
 } from '../modules/index';
 
 describe('<ReduxAsyncConnect />', function suite() {
@@ -118,7 +118,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   // inter-test state
   let testState;
 
-  pit('properly fetches data on the server', function test() {
+  it('properly fetches data on the server', function test() {
     return new Promise((resolve, reject) => {
       const store = createStore(reducers);
       const eat = spy(() => 'yammi');
@@ -200,7 +200,7 @@ describe('<ReduxAsyncConnect />', function suite() {
     proto.componentDidMount.restore();
   });
 
-  pit('loads data on client side when it wasn\'t provided by server', function test() {
+  it('loads data on client side when it wasn\'t provided by server', function test() {
     const store = createStore(reducers);
     const history = createMemoryHistory();
     const eat = spy(() => 'yammi');
@@ -234,7 +234,7 @@ describe('<ReduxAsyncConnect />', function suite() {
     });
   });
 
-  pit('supports extended connect signature', function test() {
+  it('supports extended connect signature', function test() {
     const store = createStore(reducers, initialState);
     const history = createMemoryHistory();
     const eat = spy(() => 'yammi');
@@ -273,7 +273,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   });
 
 
-  pit('renders even when no component is connected', function test() {
+  it('renders even when no component is connected', function test() {
     return new Promise((resolve, reject) => {
       const store = createStore(reducers);
       const eat = spy(() => 'yammi');
@@ -317,7 +317,7 @@ describe('<ReduxAsyncConnect />', function suite() {
     });
   });
 
-  pit('properly fetches data in the correct order given a nested routing structure', function test() {
+  it('properly fetches data in the correct order given a nested routing structure', function test() {
     return new Promise((resolve, reject) => {
       const store = createStore(reducers);
       const promiseOrder = [];
@@ -376,7 +376,7 @@ describe('<ReduxAsyncConnect />', function suite() {
     });
   });
 
-  pit('properly fetches data on the server when using immutable data structures', function test() {
+  it('properly fetches data on the server when using immutable data structures', function test() {
     // We use a special reducer built for handling immutable js data
     const immutableReducers = combineImmutableReducers({
       reduxAsyncConnect: immutableReducer,

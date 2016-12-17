@@ -9,7 +9,14 @@
   "rules": {
     "no-param-reassign": [2, {"props": false}],
     "prefer-arrow-callback": 0,
-    "react/jsx-filename-extension": 0
+    "react/jsx-filename-extension": 0,
+    "comma-dangle": ["error", {
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "never",
+      "exports": "never",
+      "functions": "never",
+    }]
   },
   "settings": {
     "import/parser": "babel-eslint",
