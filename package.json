@@ -32,7 +32,8 @@
   "peerDependencies": {
     "react": "0.14.x || 15.x.x",
     "react-router": "~2.x.x || ~3.x.x",
-    "react-redux": "~4.x.x || ~5.x.x"
+    "react-redux": "~4.x.x || ~5.x.x",
+    "prop-types": "~15.x.x"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
@@ -53,11 +54,13 @@
     "eslint-plugin-react": "^6.8.0",
     "immutable": "^3.8.1",
     "jest-cli": "^18.0.0",
+    "prop-types": "^15.5.8",
     "react": "^15.4.1",
     "react-addons-test-utils": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-redux": "^5.0.1",
     "react-router": "^3.0.0",
+    "react-test-renderer": "^15.5.4",
     "redux": "^3.6.0",
     "redux-immutable": "^3.0.9",
     "sinon": "^1.17.6"

@@ -1,4 +1,5 @@
-import React, { PropTypes, Component } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import RouterContext from 'react-router/lib/RouterContext';
 import { loadAsyncConnect } from '../helpers/utils';
 import { getMutableState } from '../helpers/state';
