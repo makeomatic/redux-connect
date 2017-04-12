@@ -33,6 +33,7 @@ This function is used to decorate your container components that are connected t
 
 ```js
 @asyncConnect([{
+  key: 'lunches',
   promise: ({ store: { dispatch, getState }, helpers }) => (
     helpers.client.get('/lunches')
   ),
@@ -42,8 +43,12 @@ export default class Home extends Component {
 }
 ```
 
-`AsyncProps` is an array of objects with a method called `promise`. `promise`
-accepts a single object as an option.
+`AsyncProps` is an array of objects with `key` and `promise` fields. 
+
+The interface is similar to react-redux connect. The `key` field of each object will be used to connect data returned from from `promise` to both the redux state and the corresponding prop in the component.
+So in example above you'll have `this.props.lunches`.
+
+The `promise` field should be a function that accepts a single object as an option. 
 
 Given that you are using `loadOnServer` as follows with the current version of
 react-router (v2.7.0 at the time of writing),
@@ -52,23 +57,19 @@ react-router (v2.7.0 at the time of writing),
 
 the option can include the following keys:
 
-* _**store** - Includes methods `dispatch` and `getState`
-* _**params** - the route params
-* _**helpers** - Any helpers you have passed from `loadOnServer`
-* _**matchContext**
-* _**router**
-* _**history**
-* _**location**
-* _**routes**
+* _**store**_ - Includes methods `dispatch` and `getState`
+* _**params**_ - the route params
+* _**helpers**_ - Any helpers you have passed from `loadOnServer`
+* _**matchContext**_
+* _**router**_
+* _**history**_
+* _**location**_
+* _**routes**_
 
-The interface is similar to react-redux connect. The keys of this object will be used to connect data returned from from promise to corresponding prop in the component.
-So in example above you'll have this.props.lunches
-
-The value of each key should be function, that accepts params from router and helpers. Redux store exists in helpers by default.
-This function can return:
-- _**undefined**_ In this case we'll do nothing
-- _**promise**_ In this case we'll store data from this promise to redux state to appropriate key and will ask ReduxAsyncConnect to delay rendering
-- _**other value**_ In this case we'll store this data to redux state to appropriate key immediately
+The `promise` function can return:
+- _**undefined**_ - In this case we'll do nothing
+- _**promise**_ - In this case we'll store data from this promise on the appropriate key in the redux state and will ask ReduxAsyncConnect to delay rendering until it's resolved.
+- _**other value**_ - In this case we'll store this data to redux state on the appropriate key immediately
 
 ## reducer
 This reducer MUST be mounted to `reduxAsyncConnect` key in combineReducers.
