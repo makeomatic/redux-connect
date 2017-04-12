@@ -22,6 +22,7 @@ export class AsyncConnect extends Component {
   };
 
   static defaultProps = {
+    helpers: {},
     reloadOnPropsChange() {
       return true;
     },
