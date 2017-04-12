@@ -90,6 +90,8 @@ export class AsyncConnect extends Component {
       // TODO: investigate race conditions
       // do we need to call this if it's not last invocation?
       this.props.endGlobalLoad();
+    }).catch((e) => {
+      console.error('Exception caught by ReduxAsyncConnect: ', e.stack || e.toString());
     }))(this.loadDataCounter);
   }
 
