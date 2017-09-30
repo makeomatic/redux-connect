@@ -31,7 +31,7 @@ Using [npm](https://www.npmjs.com/):
 import { Router, browserHistory } from 'react-router';
 import { ReduxAsyncConnect, asyncConnect, reducer as reduxAsyncConnect } from 'redux-connect'
 import React from 'react'
-import { render } from 'react-dom'
+import { hydrate } from 'react-dom'
 import { createStore, combineReducers } from 'redux';
 
 // 1. Connect your data, similar to react-redux @connect
@@ -53,7 +53,7 @@ class App extends React.Component {
 const store = createStore(combineReducers({ reduxAsyncConnect }), window.__data);
 
 // 4. Render `Router` with ReduxAsyncConnect middleware
-render((
+hydrate((
   <Provider store={store} key="provider">
     <Router render={(props) => <ReduxAsyncConnect {...props}/>} history={browserHistory}>
       <Route path="/" component={App}/>

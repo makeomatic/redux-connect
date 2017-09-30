@@ -1,10 +1,11 @@
+import Enzyme, { mount, render } from 'enzyme';
+import Adapter from 'enzyme-adapter-react-16';
 import Promise from 'bluebird';
 import React from 'react';
 import { Provider, connect } from 'react-redux';
 import { Router, createMemoryHistory, match, Route, IndexRoute } from 'react-router';
 import { createStore, combineReducers } from 'redux';
 import { combineReducers as combineImmutableReducers } from 'redux-immutable';
-import { mount, render } from 'enzyme';
 import { spy } from 'sinon';
 import Immutable from 'immutable';
 import { setToImmutableStateFunc, setToMutableStateFunc } from '../modules/helpers/state';
@@ -18,6 +19,8 @@ import {
   immutableReducer,
   loadOnServer
 } from '../modules/index';
+
+Enzyme.configure({ adapter: new Adapter() });
 
 describe('<ReduxAsyncConnect />', function suite() {
   const initialState = {
@@ -136,32 +139,33 @@ describe('<ReduxAsyncConnect />', function suite() {
           return reject(new Error('404'));
         }
 
-        return loadOnServer({ ...renderProps, store, helpers: { eat } }).then(() => {
-          const html = render(
-            <Provider store={store} key="provider">
-              <ReduxAsyncConnect {...renderProps} />
-            </Provider>
-          );
+        return loadOnServer({ ...renderProps, store, helpers: { eat } })
+          .then(() => {
+            const html = render(
+              <Provider store={store} key="provider">
+                <ReduxAsyncConnect {...renderProps} />
+              </Provider>
+            );
 
-          expect(html.text()).toContain('sandwich');
-          testState = store.getState();
-          expect(testState.reduxAsyncConnect.loaded).toBe(true);
-          expect(testState.reduxAsyncConnect.lunch).toBe('sandwich');
-          expect(testState.reduxAsyncConnect.action).toBe('yammi');
-          expect(testState.reduxAsyncConnect.loadState.lunch.loading).toBe(false);
-          expect(testState.reduxAsyncConnect.loadState.lunch.loaded).toBe(true);
-          expect(testState.reduxAsyncConnect.loadState.lunch.error).toBe(null);
-          expect(eat.calledOnce).toBe(true);
+            expect(html.text()).toContain('sandwich');
+            testState = store.getState();
+            expect(testState.reduxAsyncConnect.loaded).toBe(true);
+            expect(testState.reduxAsyncConnect.lunch).toBe('sandwich');
+            expect(testState.reduxAsyncConnect.action).toBe('yammi');
+            expect(testState.reduxAsyncConnect.loadState.lunch.loading).toBe(false);
+            expect(testState.reduxAsyncConnect.loadState.lunch.loaded).toBe(true);
+            expect(testState.reduxAsyncConnect.loadState.lunch.error).toBe(null);
+            expect(eat.calledOnce).toBe(true);
 
-          // global loader spy
-          expect(endGlobalLoadSpy.called).toBe(false);
-          expect(beginGlobalLoadSpy.called).toBe(false);
-          endGlobalLoadSpy.reset();
-          beginGlobalLoadSpy.reset();
+            // global loader spy
+            expect(endGlobalLoadSpy.called).toBe(false);
+            expect(beginGlobalLoadSpy.called).toBe(false);
+            endGlobalLoadSpy.reset();
+            beginGlobalLoadSpy.reset();
 
-          resolve();
-        })
-        .catch(reject);
+            resolve();
+          })
+          .catch(reject);
       });
     });
   });
@@ -262,6 +266,9 @@ describe('<ReduxAsyncConnect />', function suite() {
       expect(endGlobalLoadSpy.called).toBe(true);
       endGlobalLoadSpy.reset();
 
+      // https://github.com/airbnb/enzyme/blob/master/docs/guides/migration-from-2-to-3.md#for-mount-updates-are-sometimes-required-when-they-werent-before
+      wrapper.update();
+
       expect(wrapper.find(App).length).toBe(1);
       expect(wrapper.find(App).prop('lunch')).toBe('sandwich');
       expect(wrapper.find(App).prop('externalState')).toBe('supported');
@@ -291,28 +298,29 @@ describe('<ReduxAsyncConnect />', function suite() {
           return reject(new Error('404'));
         }
 
-        return loadOnServer({ ...renderProps, store, helpers: { eat } }).then(() => {
-          const html = render(
-            <Provider store={store} key="provider">
-              <ReduxAsyncConnect {...renderProps} />
-            </Provider>
-          );
+        return loadOnServer({ ...renderProps, store, helpers: { eat } })
+          .then(() => {
+            const html = render(
+              <Provider store={store} key="provider">
+                <ReduxAsyncConnect {...renderProps} />
+              </Provider>
+            );
 
-          expect(html.text()).toContain('I do not use @asyncConnect');
-          testState = store.getState();
-          expect(testState.reduxAsyncConnect.loaded).toBe(true);
-          expect(testState.reduxAsyncConnect.lunch).toBe(undefined);
-          expect(eat.called).toBe(false);
+            expect(html.text()).toContain('I do not use @asyncConnect');
+            testState = store.getState();
+            expect(testState.reduxAsyncConnect.loaded).toBe(true);
+            expect(testState.reduxAsyncConnect.lunch).toBe(undefined);
+            expect(eat.called).toBe(false);
 
-          // global loader spy
-          expect(endGlobalLoadSpy.called).toBe(false);
-          expect(beginGlobalLoadSpy.called).toBe(false);
-          endGlobalLoadSpy.reset();
-          beginGlobalLoadSpy.reset();
+            // global loader spy
+            expect(endGlobalLoadSpy.called).toBe(false);
+            expect(beginGlobalLoadSpy.called).toBe(false);
+            endGlobalLoadSpy.reset();
+            beginGlobalLoadSpy.reset();
 
-          resolve();
-        })
-        .catch(reject);
+            resolve();
+          })
+          .catch(reject);
       });
     });
   });
@@ -339,39 +347,40 @@ describe('<ReduxAsyncConnect />', function suite() {
           return reject(new Error('404'));
         }
 
-        return loadOnServer({ ...renderProps, store, helpers: { eat } }).then(() => {
-          const html = render(
-            <Provider store={store} key="provider">
-              <ReduxAsyncConnect {...renderProps} />
-            </Provider>
-          );
+        return loadOnServer({ ...renderProps, store, helpers: { eat } })
+          .then(() => {
+            const html = render(
+              <Provider store={store} key="provider">
+                <ReduxAsyncConnect {...renderProps} />
+              </Provider>
+            );
 
-          expect(html.text()).toContain('omelette');
-          expect(html.text()).toContain('chicken');
-          testState = store.getState();
-          expect(testState.reduxAsyncConnect.loaded).toBe(true);
-          expect(testState.reduxAsyncConnect.breakfast).toBe('omelette');
-          expect(testState.reduxAsyncConnect.dinner).toBe('chicken');
-          expect(testState.reduxAsyncConnect.action).toBe('yammi dinner');
-          expect(testState.reduxAsyncConnect.loadState.dinner.loading).toBe(false);
-          expect(testState.reduxAsyncConnect.loadState.dinner.loaded).toBe(true);
-          expect(testState.reduxAsyncConnect.loadState.dinner.error).toBe(null);
-          expect(testState.reduxAsyncConnect.loadState.breakfast.loading).toBe(false);
-          expect(testState.reduxAsyncConnect.loadState.breakfast.loaded).toBe(true);
-          expect(testState.reduxAsyncConnect.loadState.breakfast.error).toBe(null);
-          expect(eat.calledTwice).toBe(true);
+            expect(html.text()).toContain('omelette');
+            expect(html.text()).toContain('chicken');
+            testState = store.getState();
+            expect(testState.reduxAsyncConnect.loaded).toBe(true);
+            expect(testState.reduxAsyncConnect.breakfast).toBe('omelette');
+            expect(testState.reduxAsyncConnect.dinner).toBe('chicken');
+            expect(testState.reduxAsyncConnect.action).toBe('yammi dinner');
+            expect(testState.reduxAsyncConnect.loadState.dinner.loading).toBe(false);
+            expect(testState.reduxAsyncConnect.loadState.dinner.loaded).toBe(true);
+            expect(testState.reduxAsyncConnect.loadState.dinner.error).toBe(null);
+            expect(testState.reduxAsyncConnect.loadState.breakfast.loading).toBe(false);
+            expect(testState.reduxAsyncConnect.loadState.breakfast.loaded).toBe(true);
+            expect(testState.reduxAsyncConnect.loadState.breakfast.error).toBe(null);
+            expect(eat.calledTwice).toBe(true);
 
-          expect(promiseOrder).toEqual(['breakfast', 'dinner']);
+            expect(promiseOrder).toEqual(['breakfast', 'dinner']);
 
-          // global loader spy
-          expect(endGlobalLoadSpy.called).toBe(false);
-          expect(beginGlobalLoadSpy.called).toBe(false);
-          endGlobalLoadSpy.reset();
-          beginGlobalLoadSpy.reset();
+            // global loader spy
+            expect(endGlobalLoadSpy.called).toBe(false);
+            expect(beginGlobalLoadSpy.called).toBe(false);
+            endGlobalLoadSpy.reset();
+            beginGlobalLoadSpy.reset();
 
-          resolve();
-        })
-        .catch(reject);
+            resolve();
+          })
+          .catch(reject);
       });
     });
   });
@@ -390,7 +399,7 @@ describe('<ReduxAsyncConnect />', function suite() {
       key: 'action',
       promise: ({ helpers }) => Promise.resolve(helpers.eat()),
     }], (state, ownProps) => ({
-      externalState: state.getIn(['reduxAsyncConnect', '$$external']),  // use immutablejs methods
+      externalState: state.getIn(['reduxAsyncConnect', '$$external']), // use immutablejs methods
       remappedProp: ownProps.route.remap,
     }))(App);
 
@@ -425,32 +434,33 @@ describe('<ReduxAsyncConnect />', function suite() {
           return reject(new Error('404'));
         }
 
-        return loadOnServer({ ...renderProps, store, helpers: { eat } }).then(() => {
-          const html = render(
-            <Provider store={store} key="provider">
-              <ReduxAsyncConnect {...renderProps} />
-            </Provider>
-          );
+        return loadOnServer({ ...renderProps, store, helpers: { eat } })
+          .then(() => {
+            const html = render(
+              <Provider store={store} key="provider">
+                <ReduxAsyncConnect {...renderProps} />
+              </Provider>
+            );
 
-          expect(html.text()).toContain('sandwich');
-          testState = store.getState().toJS();  // convert to plain js for assertions
-          expect(testState.reduxAsyncConnect.loaded).toBe(true);
-          expect(testState.reduxAsyncConnect.lunch).toBe('sandwich');
-          expect(testState.reduxAsyncConnect.action).toBe('yammi');
-          expect(testState.reduxAsyncConnect.loadState.lunch.loading).toBe(false);
-          expect(testState.reduxAsyncConnect.loadState.lunch.loaded).toBe(true);
-          expect(testState.reduxAsyncConnect.loadState.lunch.error).toBe(null);
-          expect(eat.calledOnce).toBe(true);
+            expect(html.text()).toContain('sandwich');
+            testState = store.getState().toJS(); // convert to plain js for assertions
+            expect(testState.reduxAsyncConnect.loaded).toBe(true);
+            expect(testState.reduxAsyncConnect.lunch).toBe('sandwich');
+            expect(testState.reduxAsyncConnect.action).toBe('yammi');
+            expect(testState.reduxAsyncConnect.loadState.lunch.loading).toBe(false);
+            expect(testState.reduxAsyncConnect.loadState.lunch.loaded).toBe(true);
+            expect(testState.reduxAsyncConnect.loadState.lunch.error).toBe(null);
+            expect(eat.calledOnce).toBe(true);
 
-          // global loader spy
-          expect(endGlobalLoadSpy.called).toBe(false);
-          expect(beginGlobalLoadSpy.called).toBe(false);
-          endGlobalLoadSpy.reset();
-          beginGlobalLoadSpy.reset();
+            // global loader spy
+            expect(endGlobalLoadSpy.called).toBe(false);
+            expect(beginGlobalLoadSpy.called).toBe(false);
+            endGlobalLoadSpy.reset();
+            beginGlobalLoadSpy.reset();
 
-          resolve();
-        })
-        .catch(reject);
+            resolve();
+          })
+          .catch(reject);
       });
     });
   });
