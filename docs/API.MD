@@ -5,17 +5,16 @@ API
 It allows to delay route transition until all promises returned by reduxAsyncConnect methods of components defined within corresponding route are resolved or rejected.
 
 #### Props
-##### `components` (required)
-The list of components corresponding current route. It not instances...
-Usually it is provided by react Router component or match method from react router.
+##### `routes` (required)
+Static route configuration
 
-##### `params` (required)
-Router params.
-Usually it is provided by react Router component or match method from react router.
+##### `filter`
+Function used to filter `asyncConnect` items in components matched by `machRoutes`.
+Has signature: `(item: { key?: string, promise: () => Promise<any> | undefined | any }, component: React.Component) => boolean`
 
-##### `render` (required)
-Function that accepts props and uses to render components.
-Usually it's just `<RouterContext {...props} />` (by default)
+##### `render`
+Function that accepts props and used to render route components.
+Defaults to `({ routes }) => renderRoutes(routes)`
 
 ##### `helpers`
 Any helpers you may want pass to your reduxAsyncConnect static method.
@@ -51,20 +50,18 @@ So in example above you'll have `this.props.lunches`.
 The `promise` field should be a function that accepts a single object as an option. 
 
 Given that you are using `loadOnServer` as follows with the current version of
-react-router (v2.7.0 at the time of writing),
+react-router (v4.x at the time of writing),
 
-    loadOnServer({ ...renderProps, store, helpers: { client } })
+    loadOnServer({ location: { pathname: string }, routes: Array<Route>, store? : { dispatch: ({}) => any, getState: () => {} } , helpers?: {} }): Promise<void>
 
 the option can include the following keys:
 
 * _**store**_ - Includes methods `dispatch` and `getState`
-* _**params**_ - the route params
+* _**match**_ - `{ params: {}, isExact: boolean, path: string, url: string }` the match object that gets passed to `<Route>` render method
+* _**route**_ - a reference to the matched item from routes array
+* _**routes**_ - routes you have passed to `loadOnServer`
 * _**helpers**_ - Any helpers you have passed from `loadOnServer`
-* _**matchContext**_
-* _**router**_
-* _**history**_
-* _**location**_
-* _**routes**_
+* _**location**_ - location you have passed to `loadOnServer`
 
 The `promise` function can return:
 - _**undefined**_ - In this case we'll do nothing

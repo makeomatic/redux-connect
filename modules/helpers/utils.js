@@ -1,3 +1,4 @@
+import matchRoutes from 'react-router-config/matchRoutes';
 import { endGlobalLoad } from '../store';
 
 /**
@@ -71,43 +72,31 @@ export function filterAndFlattenComponents(components) {
 }
 
 /**
- * Returns an array of an array of components on the same layers that are wrapped
+ * Returns an array of components that are wrapped
  * with reduxAsyncConnect
- * @param  {Array} components
+ * @param  {Array} branch
  * @return {Array}
  */
-export function filterAndLayerComponents(components) {
-  const layered = [];
-  const l = components.length;
-  for (let i = 0; i < l; i += 1) {
-    const component = components[i];
-    if (typeof component === 'object') {
-      const keys = Object.keys(component);
-      const componentLayer = [];
-      keys.forEach((key) => {
-        if (component[key] && component[key].reduxAsyncConnect) {
-          componentLayer.push(component[key]);
-        }
-      });
-      if (componentLayer.length > 0) {
-        layered.push(componentLayer);
-      }
-    } else if (component && component.reduxAsyncConnect) {
-      layered.push([component]);
+export function filterComponents(branch) {
+  return branch.reduce((result, { route, match }) => {
+    if (route.component && route.component.reduxAsyncConnect) {
+      result.push([route.component, { route, match }]);
     }
-  }
-  return layered;
+
+    return result;
+  }, []);
 }
 
 /**
  * Function that accepts components with reduxAsyncConnect definitions
  * and loads data
- * @param  {Object} data.components
+ * @param  {Object} data.routes - static route configuration
+ * @param  {String} data.location - location object e.g. { pathname, query, ... }
  * @param  {Function} [data.filter] - filtering function
  * @return {Promise}
  */
-export function loadAsyncConnect({ components = [], filter = () => true, ...rest }) {
-  const layered = filterAndLayerComponents(components);
+export function loadAsyncConnect({ location, routes = [], filter = () => true, ...rest }) {
+  const layered = filterComponents(matchRoutes(routes, location.pathname));
 
   if (layered.length === 0) {
     return Promise.resolve();
@@ -115,33 +104,31 @@ export function loadAsyncConnect({ components = [], filter = () => true, ...rest
 
   // this allows us to have nested promises, that rely on each other's completion
   // cycle
-  return mapSeries(layered, (componentArr) => {
-    if (componentArr.length === 0) {
+  return mapSeries(layered, ([component, routeParams]) => {
+    if (component == null) {
       return Promise.resolve();
     }
-    // Collect the results of each component on current layer.
+
+    // Collect the results of each component
     const results = [];
     const asyncItemsArr = [];
-    for (let i = 0; i < componentArr.length; i += 1) {
-      const component = componentArr[i];
-      const asyncItems = component.reduxAsyncConnect;
-      asyncItemsArr.push(...asyncItems);
+    const asyncItems = component.reduxAsyncConnect;
+    asyncItemsArr.push(...asyncItems);
 
-      // get array of results
-      results.push(...asyncItems.reduce((itemsResults, item) => {
-        if (filter(item, component)) {
-          let promiseOrResult = item.promise(rest);
+    // get array of results
+    results.push(...asyncItems.reduce((itemsResults, item) => {
+      if (filter(item, component)) {
+        let promiseOrResult = item.promise({ ...rest, ...routeParams, location, routes });
 
-          if (isPromise(promiseOrResult)) {
-            promiseOrResult = promiseOrResult.catch(error => ({ error }));
-          }
-
-          itemsResults.push(promiseOrResult);
+        if (isPromise(promiseOrResult)) {
+          promiseOrResult = promiseOrResult.catch(error => ({ error }));
         }
 
-        return itemsResults;
-      }, []));
-    }
+        itemsResults.push(promiseOrResult);
+      }
+
+      return itemsResults;
+    }, []));
 
     return Promise.all(results)
       .then(finalResults => finalResults.reduce((finalResult, result, idx) => {
