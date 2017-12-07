@@ -6,7 +6,7 @@ It allows to delay route transition until all promises returned by reduxAsyncCon
 
 #### Props
 ##### `routes` (required)
-Static route configuration
+Static route configuration (`Array<Route>`)
 
 ##### `filter`
 Function used to filter `asyncConnect` items in components matched by `machRoutes`.
@@ -49,15 +49,14 @@ So in example above you'll have `this.props.lunches`.
 
 The `promise` field should be a function that accepts a single object as an option. 
 
-Given that you are using `loadOnServer` as follows with the current version of
-react-router (v4.x at the time of writing),
+Given that you are using `loadOnServer` as follows with the current version of react-router (v4.x at the time of writing),
 
-    loadOnServer({ location: { pathname: string }, routes: Array<Route>, store? : { dispatch: ({}) => any, getState: () => {} } , helpers?: {} }): Promise<void>
+    loadOnServer(params: { location: { pathname: string }, routes: Array<Route>, store? : { dispatch: (Action) => any, getState: () => any } , helpers?: any }) => Promise<void>
 
 the option can include the following keys:
 
 * _**store**_ - Includes methods `dispatch` and `getState`
-* _**match**_ - `{ params: {}, isExact: boolean, path: string, url: string }` the match object that gets passed to `<Route>` render method
+* _**match**_ - `{ params: any, isExact: boolean, path: string, url: string }` the match object that also gets passed to `<Route>` render method
 * _**route**_ - a reference to the matched item from routes array
 * _**routes**_ - routes you have passed to `loadOnServer`
 * _**helpers**_ - Any helpers you have passed from `loadOnServer`

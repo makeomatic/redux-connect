@@ -92,7 +92,6 @@ import { renderToString } from 'react-dom/server'
 import StaticRouter from 'react-router/StaticRouter'
 import { ReduxAsyncConnect, loadOnServer, reducer as reduxAsyncConnect } from 'redux-connect'
 import { parse as parseUrl } from 'url'
-import createHistory from 'history/lib/createMemoryHistory'
 import { Provider } from 'react-redux'
 import { createStore, combineReducers } from 'redux'
 import serialize from 'serialize-javascript'
@@ -136,7 +135,9 @@ function createPage(html, store) {
         <div id="app">${html}</div>
 
         <!-- its a Redux initial data -->
-        <script dangerouslySetInnerHTML={{__html: `window.__data=${serialize(store.getState())};`}} charSet="UTF-8"/>
+        <script type="text/javascript">
+          window.__data=${serialize(store.getState())};
+        </script>
       </body>
     </html>
   `
@@ -162,32 +163,6 @@ export const rootReducer = combineReducers({
   ...
 })
 ```
-
-**React Router Issue**
-
-While using the above immutablejs solution, an issue arose causing infinite recursion after firing
-off a react standard action. The recursion was caused because the `componentWillReceiveProps` method will attempt to resync with the server. Thus `componentWillReceiveProps -> resync with server -> changes props via reducer -> componentWillReceiveProps`
-
-The solution was to only resync with server on route changes. A `reloadOnPropsChange` prop is expose on the ReduxAsyncConnect component to allow customization of when a resync to the server should occur.
-
-Method signature `(props, nextProps) => bool`
-
-```js
-const reloadOnPropsChange = (props, nextProps) => {
-  // reload only when path/route has changed
-  return props.location.pathname !== nextProps.location.pathname;
-};
-
-export const Root = ({ store, history }) => (
-  <Provider store={store} key="provider">
-    <Router render={(props) => <ReduxAsyncConnect {...props}
-      reloadOnPropsChange={reloadOnPropsChange}/>} history={history}>
-      {getRoutes(store)}
-    </Router>
-  </Provider>
-);
-```
-
 
 ## Comparing with other libraries
 
