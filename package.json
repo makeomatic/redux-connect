@@ -47,7 +47,7 @@
     "babel-preset-react": "^6.16.0",
     "babel-preset-react-optimize": "^1.0.1",
     "babel-preset-stage-0": "^6.16.0",
-    "bluebird": "^3.4.6",
+    "bluebird": "^3.5.1",
     "enzyme": "^3.0.0",
     "enzyme-adapter-react-16": "^1.0.0",
     "eslint": "^4.8.0",
