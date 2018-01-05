@@ -51,6 +51,7 @@ describe('<ReduxAsyncConnect />', function suite() {
     routes,
     externalState,
     remappedProp,
+    staticContext,
     // our param
     lunch,
     // react-redux dispatch prop
@@ -130,8 +131,12 @@ describe('<ReduxAsyncConnect />', function suite() {
   */
 
   const routes = [
-    { path: '/', exact: true, component: WrappedApp, remap: 'on' },
-    { path: '/notconnected', component: UnwrappedApp },
+    {
+      path: '/', exact: true, component: WrappedApp, remap: 'on',
+    },
+    {
+      path: '/notconnected', component: UnwrappedApp,
+    },
     {
       path: '/multi',
       component: WrappedAppA,
@@ -155,17 +160,19 @@ describe('<ReduxAsyncConnect />', function suite() {
     const helpers = { eat };
     const location = { pathname: '/' };
 
-    return loadOnServer({ store, location, routes, helpers })
+    return loadOnServer({
+      store, location, routes, helpers,
+    })
       .then(() => {
         const context = {};
 
-        const html = render(
+        const html = render((
           <Provider store={store} key="provider">
             <StaticRouter location={location} context={context}>
               <ReduxAsyncConnect routes={routes} helpers={helpers} />
             </StaticRouter>
           </Provider>
-        );
+        ));
 
         if (context.url) {
           throw new Error('redirected');
@@ -197,13 +204,13 @@ describe('<ReduxAsyncConnect />', function suite() {
     spy(proto, 'loadAsyncData');
     spy(proto, 'componentDidMount');
 
-    const wrapper = mount(
+    const wrapper = mount((
       <Provider store={store} key="provider">
         <MemoryRouter>
           <ReduxAsyncConnect routes={routes} helpers={{ eat }} />
         </MemoryRouter>
       </Provider>
-    );
+    ));
 
     expect(proto.loadAsyncData.called).toBe(false);
     expect(proto.componentDidMount.calledOnce).toBe(true);
@@ -230,13 +237,13 @@ describe('<ReduxAsyncConnect />', function suite() {
     spy(proto, 'loadAsyncData');
     spy(proto, 'componentDidMount');
 
-    mount(
+    mount((
       <Provider store={store} key="provider">
         <MemoryRouter>
           <ReduxAsyncConnect routes={routes} helpers={{ eat }} />
         </MemoryRouter>
       </Provider>
-    );
+    ));
 
     expect(proto.loadAsyncData.calledOnce).toBe(true);
     expect(proto.componentDidMount.calledOnce).toBe(true);
@@ -263,13 +270,13 @@ describe('<ReduxAsyncConnect />', function suite() {
     spy(proto, 'loadAsyncData');
     spy(proto, 'componentDidMount');
 
-    const wrapper = mount(
+    const wrapper = mount((
       <Provider store={store} key="provider">
         <MemoryRouter>
           <ReduxAsyncConnect routes={routes} helpers={{ eat }} />
         </MemoryRouter>
       </Provider>
-    );
+    ));
 
     expect(proto.loadAsyncData.calledOnce).toBe(true);
     expect(proto.componentDidMount.calledOnce).toBe(true);
@@ -302,17 +309,19 @@ describe('<ReduxAsyncConnect />', function suite() {
     const location = { pathname: '/notconnected' };
     const helpers = { eat };
 
-    return loadOnServer({ store, location, routes, helpers })
+    return loadOnServer({
+      store, location, routes, helpers,
+    })
       .then(() => {
         const context = {};
 
-        const html = render(
+        const html = render((
           <Provider store={store} key="provider">
             <StaticRouter location={location} context={context}>
               <ReduxAsyncConnect routes={routes} helpers={helpers} />
             </StaticRouter>
           </Provider>
-        );
+        ));
 
         if (context.url) {
           throw new Error('redirected');
@@ -342,17 +351,19 @@ describe('<ReduxAsyncConnect />', function suite() {
     const location = { pathname: '/multi' };
     const helpers = { eat };
 
-    return loadOnServer({ store, routes, location, helpers })
+    return loadOnServer({
+      store, routes, location, helpers,
+    })
       .then(() => {
         const context = {};
 
-        const html = render(
+        const html = render((
           <Provider store={store} key="provider">
             <StaticRouter location={location} context={context}>
               <ReduxAsyncConnect routes={routes} helpers={helpers} />
             </StaticRouter>
           </Provider>
-        );
+        ));
 
         if (context.url) {
           throw new Error('redirected');
@@ -411,7 +422,9 @@ describe('<ReduxAsyncConnect />', function suite() {
     );
     */
     const immutableRoutes = [
-      { path: '/', exact: true, component: ImmutableWrappedApp, remap: 'on' },
+      {
+        path: '/', exact: true, component: ImmutableWrappedApp, remap: 'on',
+      },
       { path: '/notconnected', component: UnwrappedApp },
     ];
 
@@ -426,17 +439,19 @@ describe('<ReduxAsyncConnect />', function suite() {
     const helpers = { eat };
 
     // Use the custom immutable routes
-    return loadOnServer({ store, location, routes: immutableRoutes, helpers })
+    return loadOnServer({
+      store, location, routes: immutableRoutes, helpers,
+    })
       .then(() => {
         const context = {};
 
-        const html = render(
+        const html = render((
           <Provider store={store} key="provider">
             <StaticRouter location={location} context={context}>
               <ReduxAsyncConnect routes={immutableRoutes} helpers={helpers} />
             </StaticRouter>
           </Provider>
-        );
+        ));
 
         if (context.url) {
           throw new Error('redirected');

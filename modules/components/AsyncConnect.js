@@ -7,7 +7,7 @@ import { getMutableState } from '../helpers/state';
 
 export class AsyncConnect extends Component {
   static propTypes = {
-    render: PropTypes.func.isRequired,
+    render: PropTypes.func,
     beginGlobalLoad: PropTypes.func.isRequired,
     endGlobalLoad: PropTypes.func.isRequired,
     reloadOnPropsChange: PropTypes.func,

@@ -17,22 +17,23 @@ export function isPromise(obj) {
  * @return {Promise}
  */
 const mapSeries = Promise.mapSeries || function promiseMapSeries(iterable, iterator) {
-  const length = iterable.length;
+  const { length } = iterable;
   const results = new Array(length);
   let i = 0;
 
-  return Promise.resolve()
-    .then(function iterateOverResults() {
-      return iterator(iterable[i], i, iterable).then((result) => {
-        results[i] = result;
-        i += 1;
-        if (i < length) {
-          return iterateOverResults();
-        }
+  function iterateOverResults() {
+    return iterator(iterable[i], i, iterable).then((result) => {
+      results[i] = result;
+      i += 1;
+      if (i < length) {
+        return iterateOverResults();
+      }
 
-        return results;
-      });
+      return results;
     });
+  }
+
+  return iterateOverResults();
 };
 
 /**
@@ -95,7 +96,12 @@ export function filterComponents(branch) {
  * @param  {Function} [data.filter] - filtering function
  * @return {Promise}
  */
-export function loadAsyncConnect({ location, routes = [], filter = () => true, ...rest }) {
+export function loadAsyncConnect({
+  location,
+  routes = [],
+  filter = () => true,
+  ...rest
+}) {
   const layered = filterComponents(matchRoutes(routes, location.pathname));
 
   if (layered.length === 0) {
@@ -118,7 +124,12 @@ export function loadAsyncConnect({ location, routes = [], filter = () => true, .
     // get array of results
     results.push(...asyncItems.reduce((itemsResults, item) => {
       if (filter(item, component)) {
-        let promiseOrResult = item.promise({ ...rest, ...routeParams, location, routes });
+        let promiseOrResult = item.promise({
+          ...rest,
+          ...routeParams,
+          location,
+          routes,
+        });
 
         if (isPromise(promiseOrResult)) {
           promiseOrResult = promiseOrResult.catch(error => ({ error }));

@@ -10,10 +10,8 @@ import { getMutableState, getImmutableState } from '../helpers/state';
  */
 function wrapWithDispatch(asyncItems) {
   return asyncItems.map((item) => {
-    const key = item.key;
-    if (!key) {
-      return item;
-    }
+    const { key } = item;
+    if (!key) return item;
 
     return {
       ...item,
