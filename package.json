@@ -31,10 +31,11 @@
   },
   "homepage": "https://github.com/makeomatic/redux-connect",
   "peerDependencies": {
-    "prop-types": "~15.x.x || ~16.x.x",
+    "prop-types": "15.x.x || 16.x.x",
     "react": "16.x.x",
-    "react-redux": "~5.x.x",
-    "react-router": "~3.x.x"
+    "react-redux": "5.x.x",
+    "react-router": "4.x.x",
+    "react-router-config": "1.x.x || ^1.0.0-beta"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -46,7 +47,7 @@
     "babel-preset-react": "^6.16.0",
     "babel-preset-react-optimize": "^1.0.1",
     "babel-preset-stage-0": "^6.16.0",
-    "bluebird": "^3.4.6",
+    "bluebird": "^3.5.1",
     "enzyme": "^3.0.0",
     "enzyme-adapter-react-16": "^1.0.0",
     "eslint": "^4.8.0",
@@ -61,7 +62,8 @@
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-redux": "^5.0.6",
-    "react-router": "3.x.x",
+    "react-router": "4.x.x",
+    "react-router-config": "^1.0.0 || ^1.0.0-beta",
     "react-test-renderer": "^16.0.0",
     "redux": "^3.7.2",
     "redux-immutable": "^4.0.0",

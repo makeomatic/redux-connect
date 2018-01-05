@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import RouterContext from 'react-router/lib/RouterContext';
+import Route from 'react-router/Route';
+import renderRoutes from 'react-router-config/renderRoutes';
 import { loadAsyncConnect } from '../helpers/utils';
 import { getMutableState } from '../helpers/state';
 
@@ -11,8 +12,9 @@ export class AsyncConnect extends Component {
     endGlobalLoad: PropTypes.func.isRequired,
     reloadOnPropsChange: PropTypes.func,
     /* eslint-disable react/forbid-prop-types, react/no-unused-prop-types */
-    components: PropTypes.array.isRequired,
-    params: PropTypes.object.isRequired,
+    routes: PropTypes.array.isRequired,
+    location: PropTypes.object.isRequired,
+    match: PropTypes.object.isRequired,
     helpers: PropTypes.any,
     /* eslint-enable */
   };
@@ -26,8 +28,8 @@ export class AsyncConnect extends Component {
     reloadOnPropsChange() {
       return true;
     },
-    render(props) {
-      return <RouterContext {...props} />;
+    render({ routes }) {
+      return renderRoutes(routes);
     },
   };
 
@@ -35,7 +37,7 @@ export class AsyncConnect extends Component {
     super(props, context);
 
     this.state = {
-      propsToShow: this.isLoaded() ? props : null,
+      previousLocation: this.isLoaded() ? null : props.location,
     };
 
     this.mounted = false;
@@ -53,14 +55,12 @@ export class AsyncConnect extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    const navigated = this.props.location !== nextProps.location;
+
     // Allow a user supplied function to determine if an async reload is necessary
-    if (this.props.reloadOnPropsChange(this.props, nextProps)) {
+    if (navigated && this.props.reloadOnPropsChange(this.props, nextProps)) {
       this.loadAsyncData(nextProps);
     }
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return this.state.propsToShow !== nextState.propsToShow;
   }
 
   componentWillUnmount() {
@@ -72,8 +72,10 @@ export class AsyncConnect extends Component {
   }
 
   loadAsyncData(props) {
-    const store = this.context.store;
+    const { store } = this.context;
     const loadResult = loadAsyncConnect({ ...props, store });
+
+    this.setState({ previousLocation: this.props.location });
 
     // TODO: think of a better solution to a problem?
     this.loadDataCounter += 1;
@@ -84,7 +86,7 @@ export class AsyncConnect extends Component {
       // when user is changing route several times and we finally show him route that has
       // loaded props last time and not the last called route
       if (this.loadDataCounter === loadDataCounterOriginal && this.mounted !== false) {
-        this.setState({ propsToShow: props });
+        this.setState({ previousLocation: null });
       }
 
       // TODO: investigate race conditions
@@ -94,8 +96,15 @@ export class AsyncConnect extends Component {
   }
 
   render() {
-    const { propsToShow } = this.state;
-    return propsToShow && this.props.render(propsToShow);
+    const { previousLocation } = this.state;
+    const { location, render } = this.props;
+
+    return (
+      <Route
+        location={previousLocation || location}
+        render={() => render(this.props)}
+      />
+    );
   }
 }
 

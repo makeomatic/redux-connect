@@ -28,36 +28,59 @@ Using [npm](https://www.npmjs.com/):
 `$ npm install redux-connect -S`
 
 ```js
-import { Router, browserHistory } from 'react-router';
+import BrowserRouter from 'react-router-dom/BrowserRouter'
+import renderRoutes from 'react-router-config/renderRoutes'
 import { ReduxAsyncConnect, asyncConnect, reducer as reduxAsyncConnect } from 'redux-connect'
 import React from 'react'
 import { hydrate } from 'react-dom'
-import { createStore, combineReducers } from 'redux';
+import { createStore, combineReducers } from 'redux'
 
 // 1. Connect your data, similar to react-redux @connect
 @asyncConnect([{
   key: 'lunch',
-  promise: ({ params, helpers }) => Promise.resolve({ id: 1, name: 'Borsch' })
+  promise: ({ match: { params }, helpers }) => Promise.resolve({ id: 1, name: 'Borsch' })
 }])
 class App extends React.Component {
   render() {
     // 2. access data as props
-    const lunch = this.props.lunch
+    const { lunch, route } = this.props
+    
     return (
-      <div>{lunch.name}</div>
+      <div>
+        {lunch.name}
+        {renderRoutes(route.routes)}
+      </div>
     )
   }
 }
 
-// 3. Connect redux async reducer
-const store = createStore(combineReducers({ reduxAsyncConnect }), window.__data);
+class Child extends React.component {
+  render() {
+    return (
+      <div>{'child component'}</div>
+    )
+  }
+}
 
-// 4. Render `Router` with ReduxAsyncConnect middleware
+const routes = [{
+  path: '/',
+  component: App,
+  routes: [{
+    path: '/child',
+    exact: true,
+    component: Child,
+  }]
+}]
+
+// 2. Connect redux async reducer
+const store = createStore(combineReducers({ reduxAsyncConnect }), window.__data)
+
+// 3. Render `Router` with ReduxAsyncConnect middleware
 hydrate((
   <Provider store={store} key="provider">
-    <Router render={(props) => <ReduxAsyncConnect {...props}/>} history={browserHistory}>
-      <Route path="/" component={App}/>
-    </Router>
+    <BrowserRouter>
+      <ReduxAsyncConnect routes={routes} helpers={helpers} />
+    </BrowserRouter>
   </Provider>
 ), el)
 ```
@@ -66,33 +89,42 @@ hydrate((
 
 ```js
 import { renderToString } from 'react-dom/server'
-import { match, RoutingContext } from 'react-router'
+import StaticRouter from 'react-router/StaticRouter'
 import { ReduxAsyncConnect, loadOnServer, reducer as reduxAsyncConnect } from 'redux-connect'
-import createHistory from 'history/lib/createMemoryHistory';
-import { Provider } from 'react-redux';
-import { createStore, combineReducers } from 'redux';
-import serialize from 'serialize-javascript';
+import { parse as parseUrl } from 'url'
+import { Provider } from 'react-redux'
+import { createStore, combineReducers } from 'redux'
+import serialize from 'serialize-javascript'
 
 app.get('*', (req, res) => {
-  const store = createStore(combineReducers({ reduxAsyncConnect }));
+  const store = createStore(combineReducers({ reduxAsyncConnect }))
+  const url = req.originalUrl || req.url
+  const location = parseUrl(url)
 
-  match({ routes, location: req.url }, (err, redirect, renderProps) => {
-
-    // 1. load data
-    loadOnServer({ ...renderProps, store }).then(() => {
-
-      // 2. use `ReduxAsyncConnect` instead of `RoutingContext` and pass it `renderProps`
+  // 1. load data
+  loadOnServer({ store, location, routes, helpers })
+    .then(() => {
+      const context = {}
+      
+      // 2. use `ReduxAsyncConnect` to render component tree
       const appHTML = renderToString(
         <Provider store={store} key="provider">
-          <ReduxAsyncConnect {...renderProps} />
+          <StaticRouter location={location} context={context}>
+            <ReduxAsyncConnect routes={routes} helpers={helpers} />
+          </StaticRouter>
         </Provider>
       )
+      
+      // handle redirects
+      if (context.url) {
+        req.header('Location', context.url)
+        return res.send(302)
+      }
 
       // 3. render the Redux initial data into the server markup
       const html = createPage(appHTML, store)
       res.send(html)
     })
-  })
 })
 
 function createPage(html, store) {
@@ -103,7 +135,9 @@ function createPage(html, store) {
         <div id="app">${html}</div>
 
         <!-- its a Redux initial data -->
-        <script dangerouslySetInnerHTML={{__html: `window.__data=${serialize(store.getState())};`}} charSet="UTF-8"/>
+        <script type="text/javascript">
+          window.__data=${serialize(store.getState())};
+        </script>
       </body>
     </html>
   `
@@ -111,41 +145,6 @@ function createPage(html, store) {
 ```
 
 ## [API](/docs/API.MD)
-
-## Usage with `applyRouterMiddleware`
-
-Thanks to @mmahalwy for a good usage example
-Pass custom `render` method to `ReduxAsyncConnect`, it can look like this:
-
-```js
-// on client
-const component = (
-  <Router
-    render={(props) => (
-      <ReduxAsyncConnect
-        {...props}
-        helpers={{ client }}
-        filter={item => !item.deferred}
-        render={applyRouterMiddleware(useScroll())}
-      />
-    )}
-    history={history}
-    routes={getRoutes(store)}
-  />
-);
-```
-
-Basically what you do is instead of using render method like:
-
-```js
-const render = props => <RouterContext {...props} />;
-```
-
-you use
-
-```js
-const render = applyRouterMiddleware(...middleware);
-```
 
 ## Usage with `ImmutableJS`
 
@@ -164,32 +163,6 @@ export const rootReducer = combineReducers({
   ...
 })
 ```
-
-**React Router Issue**
-
-While using the above immutablejs solution, an issue arose causing infinite recursion after firing
-off a react standard action. The recursion was caused because the `componentWillReceiveProps` method will attempt to resync with the server. Thus `componentWillReceiveProps -> resync with server -> changes props via reducer -> componentWillReceiveProps`
-
-The solution was to only resync with server on route changes. A `reloadOnPropsChange` prop is expose on the ReduxAsyncConnect component to allow customization of when a resync to the server should occur.
-
-Method signature `(props, nextProps) => bool`
-
-```js
-const reloadOnPropsChange = (props, nextProps) => {
-  // reload only when path/route has changed
-  return props.location.pathname !== nextProps.location.pathname;
-};
-
-export const Root = ({ store, history }) => (
-  <Provider store={store} key="provider">
-    <Router render={(props) => <ReduxAsyncConnect {...props}
-      reloadOnPropsChange={reloadOnPropsChange}/>} history={history}>
-      {getRoutes(store)}
-    </Router>
-  </Provider>
-);
-```
-
 
 ## Comparing with other libraries
 

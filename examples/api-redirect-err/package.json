@@ -1,0 +1,44 @@
+{
+  "name": "api-redirect-err",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.17.1",
+    "bluebird": "^3.5.1",
+    "compression": "^1.7.1",
+    "express": "^4.16.2",
+    "ignore-styles": "^5.0.1",
+    "morgan": "^1.9.0",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-redux": "^5.0.6",
+    "react-router": "^4.2.0",
+    "react-router-config": "^1.0.0-beta.4",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "1.0.17",
+    "redux": "^3.7.2",
+    "redux-actions": "^2.2.1",
+    "redux-promise": "^0.5.3",
+    "rimraf": "^2.6.2"
+  },
+  "scripts": {
+    "start": "NODE_ENV=production npm run build && node server/index.js",
+    "start:client": "react-scripts start",
+    "build:client": "react-scripts build",
+    "build:server": "babel src --out-dir babel-src --copy-files",
+    "build": "npm run build:client && npm run build:server",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "clean": "rimraf build babel-src"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1"
+  },
+  "babel": {
+    "presets": [
+      "env",
+      "react-app"
+    ]
+  }
+}
