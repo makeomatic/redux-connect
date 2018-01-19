@@ -2,7 +2,6 @@ ReduxConnect for React Router
 ============
 [![npm version](https://img.shields.io/npm/v/redux-connect.svg?style=flat-square)](https://www.npmjs.com/package/redux-connect)
 [![Build Status](https://travis-ci.org/makeomatic/redux-connect.svg?branch=master)](https://travis-ci.org/makeomatic/redux-connect)
-[![Gratipay](http://img.shields.io/gratipay/user/AVVS.svg)](https://gratipay.com/~AVVS/)
 
 
 How do you usually request data and store it to redux state?
