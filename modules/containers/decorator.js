@@ -77,5 +77,5 @@ export function asyncConnect(asyncItems, mapStateToProps, mapDispatchToProps, me
   };
 }
 
-// convinience export
+// convenience export
 export default asyncConnect;
