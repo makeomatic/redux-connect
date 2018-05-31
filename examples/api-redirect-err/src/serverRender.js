@@ -23,7 +23,7 @@ export default function serverRender(req, res, html) {
         <Provider store={store}>
           {/* passing the context and the same location as to loadOnServer fn */}
           <StaticRouter location={location} context={context}>
-            <ReduxAsyncConnect routes={routes} helers={helpers} />
+            <ReduxAsyncConnect routes={routes} helpers={helpers} />
           </StaticRouter>
         </Provider>
       );
