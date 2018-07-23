@@ -22,6 +22,7 @@ This is a fork and refactor of [redux-async-connect](https://github.com/Rezonans
 
 ## Installation & Usage
 
+This library require Promise to be polyfilled by the consumer.
 Using [npm](https://www.npmjs.com/):
 
 `$ npm install redux-connect -S`
