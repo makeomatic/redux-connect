@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Route from 'react-router/Route';
-import renderRoutes from 'react-router-config/renderRoutes';
+import { Route } from 'react-router';
+import { renderRoutes } from 'react-router-config';
 import { loadAsyncConnect } from '../helpers/utils';
 import { getMutableState } from '../helpers/state';
 
@@ -20,7 +20,7 @@ export class AsyncConnect extends Component {
   };
 
   static contextTypes = {
-    store: PropTypes.object.isRequired,
+    store: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   };
 
   static defaultProps = {
@@ -55,10 +55,11 @@ export class AsyncConnect extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const navigated = this.props.location !== nextProps.location;
+    const { location, reloadOnPropsChange } = this.props;
+    const navigated = location !== nextProps.location;
 
     // Allow a user supplied function to determine if an async reload is necessary
-    if (navigated && this.props.reloadOnPropsChange(this.props, nextProps)) {
+    if (navigated && reloadOnPropsChange(this.props, nextProps)) {
       this.loadAsyncData(nextProps);
     }
   }
@@ -68,18 +69,20 @@ export class AsyncConnect extends Component {
   }
 
   isLoaded() {
-    return getMutableState(this.context.store.getState()).reduxAsyncConnect.loaded;
+    const { store } = this.context;
+    return getMutableState(store.getState()).reduxAsyncConnect.loaded;
   }
 
   loadAsyncData(props) {
     const { store } = this.context;
+    const { location, beginGlobalLoad, endGlobalLoad } = this.props;
     const loadResult = loadAsyncConnect({ ...props, store });
 
-    this.setState({ previousLocation: this.props.location });
+    this.setState({ previousLocation: location });
 
     // TODO: think of a better solution to a problem?
     this.loadDataCounter += 1;
-    this.props.beginGlobalLoad();
+    beginGlobalLoad();
     return (loadDataCounterOriginal => loadResult.then(() => {
       // We need to change propsToShow only if loadAsyncData that called this promise
       // is the last invocation of loadAsyncData method. Otherwise we can face a situation
@@ -91,7 +94,7 @@ export class AsyncConnect extends Component {
 
       // TODO: investigate race conditions
       // do we need to call this if it's not last invocation?
-      this.props.endGlobalLoad();
+      endGlobalLoad();
     }))(this.loadDataCounter);
   }
 
