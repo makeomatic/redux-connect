@@ -45,16 +45,16 @@
     "react-router-config": "1.x.x || ^1.0.0-beta"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
+    "@babel/cli": "^7.0.0-beta.55",
+    "@babel/core": "^7.0.0-beta.55",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.55",
+    "@babel/plugin-proposal-export-default-from": "^7.0.0-beta.55",
+    "@babel/preset-env": "^7.0.0-beta.55",
+    "@babel/preset-react": "^7.0.0-beta.55",
+    "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^8.1.2",
-    "babel-jest": "^23.4.0",
+    "babel-jest": "^23.4.2",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.13",
-    "babel-plugin-transform-runtime": "^6.15.0",
-    "babel-preset-es2015": "^6.18.0",
-    "babel-preset-react": "^6.16.0",
-    "babel-preset-react-optimize": "^1.0.1",
-    "babel-preset-stage-0": "^6.16.0",
     "bluebird": "^3.5.1",
     "cross-env": "^5.2.0",
     "enzyme": "^3.3.0",
@@ -65,7 +65,7 @@
     "eslint-plugin-jsx-a11y": "6.1.1",
     "eslint-plugin-react": "^7.4.0",
     "immutable": "^3.8.1",
-    "jest-cli": "^23.4.1",
+    "jest": "^23.4.2",
     "prop-types": "^15.6.0",
     "raf": "^3.3.2",
     "react": "^16.0.0",
@@ -76,14 +76,16 @@
     "react-test-renderer": "^16.0.0",
     "redux": "^4.0.0",
     "redux-immutable": "^4.0.0",
-    "sinon": "^4.1.3"
+    "regenerator-runtime": "^0.12.0",
+    "sinon": "^6.1.4"
   },
   "dependencies": {
-    "redux-actions": "^2.2.1"
+    "redux-actions": "^2.6.1"
   },
   "jest": {
     "automock": false,
     "testEnvironment": "jsdom",
+    "testURL": "http://localhost",
     "transform": {
       ".*": "<rootDir>/node_modules/babel-jest"
     },
