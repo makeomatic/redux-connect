@@ -17,7 +17,10 @@ module.exports = function babelConfig(api) {
       ['@babel/preset-env', {
         loose: true,
         modules: babelEnv === 'es' ? false : 'commonjs',
-
+        targets: {
+          browsers: ['last 2 versions'],
+          node: 'current',
+        },
       }],
       '@babel/preset-react',
     ],
