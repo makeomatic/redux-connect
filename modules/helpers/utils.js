@@ -1,4 +1,4 @@
-import matchRoutes from 'react-router-config/matchRoutes';
+import { matchRoutes } from 'react-router-config';
 import { endGlobalLoad } from '../store';
 
 /**
