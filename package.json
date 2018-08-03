@@ -18,8 +18,9 @@
     "lint": "eslint ./modules",
     "pretest": "yarn lint",
     "test": "jest",
+    "preversion": "yarn test",
     "postversion": "npm publish && git push && git push --tags",
-    "prepublish": "yarn lint && yarn build"
+    "prepare": "yarn build"
   },
   "keywords": [
     "redux",
