@@ -43,7 +43,7 @@ class App extends React.Component {
   render() {
     // 2. access data as props
     const { lunch, route } = this.props
-    
+
     return (
       <div>
         {lunch.name}
@@ -104,7 +104,7 @@ app.get('*', (req, res) => {
   loadOnServer({ store, location, routes, helpers })
     .then(() => {
       const context = {}
-      
+
       // 2. use `ReduxAsyncConnect` to render component tree
       const appHTML = renderToString(
         <Provider store={store} key="provider">
@@ -113,7 +113,7 @@ app.get('*', (req, res) => {
           </StaticRouter>
         </Provider>
       )
-      
+
       // handle redirects
       if (context.url) {
         req.header('Location', context.url)
@@ -190,7 +190,8 @@ Also it's integrated with [React Router](https://github.com/rackt/react-router) 
 until data is loaded.
 
 ## Contributors
-- [Vitaly Aminev](https://en.makeomatic.ru)
+- [Vitaly Aminev](https://makeomatic.ca)
+- [Gerhard Sletten](https://github.com/gerhardsletten)
 - [Todd Bluhm](https://github.com/toddbluhm)
 - [Eliseu Monar](https://github.com/eliseumds)
 - [Rui Araújo](https://github.com/ruiaraujo)

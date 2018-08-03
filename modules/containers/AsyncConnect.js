@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import withRouter from 'react-router/withRouter';
+import { withRouter } from 'react-router';
 import { AsyncConnect } from '../components/AsyncConnect';
 import { beginGlobalLoad, endGlobalLoad } from '../store';
 

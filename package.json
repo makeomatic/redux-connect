@@ -3,12 +3,18 @@
   "version": "7.0.0",
   "description": "It allows you to request async data, store them in redux state and connect them to your react component.",
   "main": "lib/index.js",
+  "module": "es/index.js",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/makeomatic/redux-connect"
   },
   "scripts": {
-    "build": "rm -rf ./lib; NODE_ENV=production babel ./modules -d lib --ignore '__tests__'",
+    "build": "npm run build:lib && npm run build:es",
+    "prebuild:lib": "rm -rf lib/*",
+    "build:lib": "cross-env NODE_ENV=production babel --out-dir lib modules",
+    "prebuild:es": "rm -rf es/*",
+    "build:es": "cross-env NODE_ENV=production BABEL_ENV=es babel --out-dir es modules",
     "lint": "eslint ./modules",
     "pretest": "yarn lint",
     "test": "jest",
@@ -39,25 +45,27 @@
     "react-router-config": "1.x.x || ^1.0.0-beta"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
+    "@babel/cli": "^7.0.0-beta.55",
+    "@babel/core": "^7.0.0-beta.55",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.55",
+    "@babel/plugin-proposal-export-default-from": "^7.0.0-beta.55",
+    "@babel/preset-env": "^7.0.0-beta.55",
+    "@babel/preset-react": "^7.0.0-beta.55",
+    "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^8.1.2",
-    "babel-jest": "^22.0.4",
-    "babel-plugin-transform-runtime": "^6.15.0",
-    "babel-preset-es2015": "^6.18.0",
-    "babel-preset-react": "^6.16.0",
-    "babel-preset-react-optimize": "^1.0.1",
-    "babel-preset-stage-0": "^6.16.0",
+    "babel-jest": "^23.4.2",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.13",
     "bluebird": "^3.5.1",
+    "cross-env": "^5.2.0",
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
-    "eslint": "^4.14.0",
+    "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-jsx-a11y": "6.0.3",
+    "eslint-plugin-jsx-a11y": "6.1.1",
     "eslint-plugin-react": "^7.4.0",
     "immutable": "^3.8.1",
-    "jest-cli": "^22.0.4",
+    "jest": "^23.4.2",
     "prop-types": "^15.6.0",
     "raf": "^3.3.2",
     "react": "^16.0.0",
@@ -66,17 +74,18 @@
     "react-router": "4.x.x",
     "react-router-config": "^1.0.0 || ^1.0.0-beta",
     "react-test-renderer": "^16.0.0",
-    "redux": "^3.7.2",
+    "redux": "^4.0.0",
     "redux-immutable": "^4.0.0",
-    "sinon": "^4.1.3"
+    "regenerator-runtime": "^0.12.0",
+    "sinon": "^6.1.4"
   },
   "dependencies": {
-    "babel-runtime": "^6.26.0",
-    "redux-actions": "^2.2.1"
+    "redux-actions": "^2.6.1"
   },
   "jest": {
     "automock": false,
     "testEnvironment": "jsdom",
+    "testURL": "http://localhost",
     "transform": {
       ".*": "<rootDir>/node_modules/babel-jest"
     },
@@ -86,6 +95,7 @@
   },
   "files": [
     "modules/",
-    "lib/"
+    "lib/",
+    "es/"
   ]
 }

@@ -191,8 +191,8 @@ describe('<ReduxAsyncConnect />', function suite() {
         // global loader spy
         expect(endGlobalLoadSpy.called).toBe(false);
         expect(beginGlobalLoadSpy.called).toBe(false);
-        endGlobalLoadSpy.reset();
-        beginGlobalLoadSpy.reset();
+        endGlobalLoadSpy.resetHistory();
+        beginGlobalLoadSpy.resetHistory();
       });
   });
 
@@ -222,8 +222,8 @@ describe('<ReduxAsyncConnect />', function suite() {
     // global loader spy
     expect(endGlobalLoadSpy.called).toBe(false);
     expect(beginGlobalLoadSpy.called).toBe(false);
-    endGlobalLoadSpy.reset();
-    beginGlobalLoadSpy.reset();
+    endGlobalLoadSpy.resetHistory();
+    beginGlobalLoadSpy.resetHistory();
 
     proto.loadAsyncData.restore();
     proto.componentDidMount.restore();
@@ -251,11 +251,11 @@ describe('<ReduxAsyncConnect />', function suite() {
 
     // global loader spy
     expect(beginGlobalLoadSpy.called).toBe(true);
-    beginGlobalLoadSpy.reset();
+    beginGlobalLoadSpy.resetHistory();
 
     return proto.loadAsyncData.returnValues[0].then(() => {
       expect(endGlobalLoadSpy.called).toBe(true);
-      endGlobalLoadSpy.reset();
+      endGlobalLoadSpy.resetHistory();
 
       proto.loadAsyncData.restore();
       proto.componentDidMount.restore();
@@ -283,11 +283,11 @@ describe('<ReduxAsyncConnect />', function suite() {
 
     // global loader spy
     expect(beginGlobalLoadSpy.called).toBe(true);
-    beginGlobalLoadSpy.reset();
+    beginGlobalLoadSpy.resetHistory();
 
     return proto.loadAsyncData.returnValues[0].then(() => {
       expect(endGlobalLoadSpy.called).toBe(true);
-      endGlobalLoadSpy.reset();
+      endGlobalLoadSpy.resetHistory();
 
       // https://github.com/airbnb/enzyme/blob/master/docs/guides/migration-from-2-to-3.md#for-mount-updates-are-sometimes-required-when-they-werent-before
       wrapper.update();
@@ -336,8 +336,8 @@ describe('<ReduxAsyncConnect />', function suite() {
         // global loader spy
         expect(endGlobalLoadSpy.called).toBe(false);
         expect(beginGlobalLoadSpy.called).toBe(false);
-        endGlobalLoadSpy.reset();
-        beginGlobalLoadSpy.reset();
+        endGlobalLoadSpy.resetHistory();
+        beginGlobalLoadSpy.resetHistory();
       });
   });
 
@@ -389,8 +389,8 @@ describe('<ReduxAsyncConnect />', function suite() {
         // global loader spy
         expect(endGlobalLoadSpy.called).toBe(false);
         expect(beginGlobalLoadSpy.called).toBe(false);
-        endGlobalLoadSpy.reset();
-        beginGlobalLoadSpy.reset();
+        endGlobalLoadSpy.resetHistory();
+        beginGlobalLoadSpy.resetHistory();
       });
   });
 
@@ -470,8 +470,8 @@ describe('<ReduxAsyncConnect />', function suite() {
         // global loader spy
         expect(endGlobalLoadSpy.called).toBe(false);
         expect(beginGlobalLoadSpy.called).toBe(false);
-        endGlobalLoadSpy.reset();
-        beginGlobalLoadSpy.reset();
+        endGlobalLoadSpy.resetHistory();
+        beginGlobalLoadSpy.resetHistory();
       });
   });
 });
