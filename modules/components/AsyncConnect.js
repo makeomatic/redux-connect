@@ -17,7 +17,7 @@ export class AsyncConnect extends Component {
     location: PropTypes.object.isRequired,
     match: PropTypes.object.isRequired,
     helpers: PropTypes.any,
-    store: PropTypes.object.isRequired,
+    reduxConnectStore: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
@@ -66,13 +66,16 @@ export class AsyncConnect extends Component {
   }
 
   isLoaded() {
-    const { store } = this.props;
-    return getMutableState(store.getState()).reduxAsyncConnect.loaded;
+    const { reduxConnectStore } = this.props;
+    return getMutableState(reduxConnectStore.getState()).reduxAsyncConnect.loaded;
   }
 
-  loadAsyncData(props) {
+  loadAsyncData({ reduxConnectStore, ...otherProps }) {
     const { location, beginGlobalLoad, endGlobalLoad } = this.props;
-    const loadResult = loadAsyncConnect(props);
+    const loadResult = loadAsyncConnect({
+      ...otherProps,
+      store: reduxConnectStore,
+    });
 
     this.setState({ previousLocation: location });
 
@@ -86,7 +89,7 @@ export class AsyncConnect extends Component {
       // loaded props last time and not the last called route
       if (
         this.loadDataCounter === loadDataCounterOriginal
-          && this.mounted !== false
+        && this.mounted !== false
       ) {
         this.setState({ previousLocation: null });
       }
@@ -119,7 +122,12 @@ const AsyncConnectWithContext = ({ context, ...otherProps }) => {
 
   return (
     <Context.Consumer>
-      {({ store }) => <AsyncConnect store={store} {...otherProps} />}
+      {({ store: reduxConnectStore }) => (
+        <AsyncConnect
+          reduxConnectStore={reduxConnectStore}
+          {...otherProps}
+        />
+      )}
     </Context.Consumer>
   );
 };

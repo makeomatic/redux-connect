@@ -15,7 +15,7 @@ import { setToImmutableStateFunc, setToMutableStateFunc } from '../modules/helpe
 
 // import module
 import { endGlobalLoad, beginGlobalLoad } from '../modules/store';
-import AsyncConnectWithContext,{ AsyncConnect } from '../modules/components/AsyncConnect';
+import AsyncConnectWithContext, { AsyncConnect } from '../modules/components/AsyncConnect';
 import {
   asyncConnect,
   reducer as reduxAsyncConnect,
