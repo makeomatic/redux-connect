@@ -1,6 +1,6 @@
 {
   "name": "redux-connect",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "description": "It allows you to request async data, store them in redux state and connect them to your react component.",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -10,7 +10,7 @@
     "url": "https://github.com/makeomatic/redux-connect"
   },
   "scripts": {
-    "build": "npm run build:lib && npm run build:es",
+    "build": "yarn build:lib && yarn build:es",
     "prebuild:lib": "rm -rf lib/*",
     "build:lib": "cross-env NODE_ENV=production babel --out-dir lib modules",
     "prebuild:es": "rm -rf es/*",
