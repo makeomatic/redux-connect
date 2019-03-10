@@ -6,7 +6,7 @@ import { Provider, connect } from 'react-redux';
 import withRouter from 'react-router/withRouter';
 import StaticRouter from 'react-router/StaticRouter';
 import MemoryRouter from 'react-router/MemoryRouter';
-import renderRoutes from 'react-router-config/renderRoutes';
+import { renderRoutes } from 'react-router-config';
 import { createStore, combineReducers } from 'redux';
 import { combineReducers as combineImmutableReducers } from 'redux-immutable';
 import { spy } from 'sinon';
@@ -15,7 +15,7 @@ import { setToImmutableStateFunc, setToMutableStateFunc } from '../modules/helpe
 
 // import module
 import { endGlobalLoad, beginGlobalLoad } from '../modules/store';
-import { AsyncConnect } from '../modules/components/AsyncConnect';
+import AsyncConnectWithContext, { AsyncConnect } from '../modules/components/AsyncConnect';
 import {
   asyncConnect,
   reducer as reduxAsyncConnect,
@@ -36,7 +36,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   const ReduxAsyncConnect = withRouter(connect(null, {
     beginGlobalLoad: beginGlobalLoadSpy,
     endGlobalLoad: endGlobalLoadSpy,
-  })(AsyncConnect));
+  })(AsyncConnectWithContext));
 
   /* eslint-disable no-unused-vars */
   const App = ({
@@ -198,7 +198,7 @@ describe('<ReduxAsyncConnect />', function suite() {
 
   it('properly picks data up from the server', function test() {
     const store = createStore(reducers, testState);
-    const proto = ReduxAsyncConnect.WrappedComponent.prototype;
+    const proto = AsyncConnect.prototype;
     const eat = spy(() => 'yammi');
 
     spy(proto, 'loadAsyncData');
@@ -232,7 +232,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   it('loads data on client side when it wasn\'t provided by server', function test() {
     const store = createStore(reducers);
     const eat = spy(() => 'yammi');
-    const proto = ReduxAsyncConnect.WrappedComponent.prototype;
+    const proto = AsyncConnect.prototype;
 
     spy(proto, 'loadAsyncData');
     spy(proto, 'componentDidMount');
@@ -265,7 +265,7 @@ describe('<ReduxAsyncConnect />', function suite() {
   it('supports extended connect signature', function test() {
     const store = createStore(reducers, initialState);
     const eat = spy(() => 'yammi');
-    const proto = ReduxAsyncConnect.WrappedComponent.prototype;
+    const proto = AsyncConnect.prototype;
 
     spy(proto, 'loadAsyncData');
     spy(proto, 'componentDidMount');
@@ -301,7 +301,6 @@ describe('<ReduxAsyncConnect />', function suite() {
       proto.componentDidMount.restore();
     });
   });
-
 
   it('renders even when no component is connected', function test() {
     const store = createStore(reducers);
