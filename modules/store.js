@@ -4,7 +4,7 @@ import { getMutableState, getImmutableState } from './helpers/state';
 export const clearKey = createAction('@redux-conn/CLEAR');
 export const beginGlobalLoad = createAction('@redux-conn/BEGIN_GLOBAL_LOAD');
 export const endGlobalLoad = createAction('@redux-conn/END_GLOBAL_LOAD');
-export const load = createAction('@redux-conn/LOAD', key => ({ key }));
+export const load = createAction('@redux-conn/LOAD', (key) => ({ key }));
 export const loadSuccess = createAction('@redux-conn/LOAD_SUCCESS', (key, data) => ({ key, data }));
 export const loadFail = createAction('@redux-conn/LOAD_FAIL', (key, error) => ({ key, error }));
 
@@ -14,12 +14,12 @@ const initialState = {
 };
 
 export const reducer = handleActions({
-  [beginGlobalLoad]: state => ({
+  [beginGlobalLoad]: (state) => ({
     ...state,
     loaded: false,
   }),
 
-  [endGlobalLoad]: state => ({
+  [endGlobalLoad]: (state) => ({
     ...state,
     loaded: true,
   }),

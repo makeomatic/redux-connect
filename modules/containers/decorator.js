@@ -25,8 +25,8 @@ function wrapWithDispatch(asyncItems) {
           dispatch(load(key));
           // add action dispatchers
           next
-            .then(data => dispatch(loadSuccess(key, data)))
-            .catch(err => dispatch(loadFail(key, err)));
+            .then((data) => dispatch(loadSuccess(key, data)))
+            .catch((err) => dispatch(loadFail(key, err)));
         } else if (next) {
           dispatch(loadSuccess(key, next));
         }

@@ -16,6 +16,11 @@
       "imports": "never",
       "exports": "never",
       "functions": "never",
+    }],
+    "react/jsx-props-no-spreading": ['error', {
+      "html": "ignore",
+      "custom": "ignore",
+      "exceptions": ["AsyncConnect.js"]
     }]
   },
   "settings": {
