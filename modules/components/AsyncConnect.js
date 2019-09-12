@@ -29,6 +29,7 @@ export class AsyncConnect extends Component {
     }
   }
 
+  // eslint-disable-next-line camelcase
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { location, reloadOnPropsChange } = this.props;
     const navigated = location !== nextProps.location;
