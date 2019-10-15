@@ -3,9 +3,7 @@ import Adapter from 'enzyme-adapter-react-16';
 import Promise from 'bluebird';
 import React from 'react';
 import { Provider, connect } from 'react-redux';
-import withRouter from 'react-router/withRouter';
-import StaticRouter from 'react-router/StaticRouter';
-import MemoryRouter from 'react-router/MemoryRouter';
+import { withRouter, StaticRouter, MemoryRouter } from 'react-router';
 import { renderRoutes } from 'react-router-config';
 import { createStore, combineReducers } from 'redux';
 import { combineReducers as combineImmutableReducers } from 'redux-immutable';
@@ -26,6 +24,23 @@ import {
 Enzyme.configure({ adapter: new Adapter() });
 
 describe('<ReduxAsyncConnect />', function suite() {
+  // https://github.com/reduxjs/react-redux/issues/1373
+  const originalConsoleError = console.error;
+
+  beforeEach(() => {
+    console.error = jest.fn((msg) => {
+      if (msg.includes('Warning: useLayoutEffect does nothing on the server')) {
+        return null;
+      }
+
+      return originalConsoleError(msg);
+    });
+  });
+
+  afterEach(() => {
+    console.error = originalConsoleError;
+  });
+
   const initialState = {
     reduxAsyncConnect: { loaded: false, loadState: {}, $$external: 'supported' },
   };
