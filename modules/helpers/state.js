@@ -1,5 +1,5 @@
 // Global vars holding the custom state conversion methods. Default is just identity methods
-const identity = arg => arg;
+const identity = (arg) => arg;
 
 // default pass-through functions
 let immutableStateFunc = identity;
@@ -25,10 +25,10 @@ export function setToMutableStateFunc(func) {
  * Call when needing to transform mutable data to immutable data using the preset function
  * @param {Object} state Mutable state thats converted to immutable state by user defined func
  */
-export const getImmutableState = state => immutableStateFunc(state);
+export const getImmutableState = (state) => immutableStateFunc(state);
 
 /**
  * Call when needing to transform immutable data to mutable data using the preset function
  * @param {Immutable} state Immutable state thats converted to mutable state by user defined func
  */
-export const getMutableState = state => mutableStateFunc(state);
+export const getMutableState = (state) => mutableStateFunc(state);

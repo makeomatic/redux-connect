@@ -8,28 +8,6 @@ import { loadAsyncConnect } from '../helpers/utils';
 import { getMutableState } from '../helpers/state';
 
 export class AsyncConnect extends Component {
-  static propTypes = {
-    render: PropTypes.func,
-    beginGlobalLoad: PropTypes.func.isRequired,
-    endGlobalLoad: PropTypes.func.isRequired,
-    reloadOnPropsChange: PropTypes.func,
-    routes: PropTypes.array.isRequired,
-    location: PropTypes.object.isRequired,
-    match: PropTypes.object.isRequired,
-    helpers: PropTypes.any,
-    reduxConnectStore: PropTypes.object.isRequired,
-  };
-
-  static defaultProps = {
-    helpers: {},
-    reloadOnPropsChange() {
-      return true;
-    },
-    render({ routes }) {
-      return renderRoutes(routes);
-    },
-  };
-
   constructor(props) {
     super(props);
 
@@ -51,7 +29,7 @@ export class AsyncConnect extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
     const { location, reloadOnPropsChange } = this.props;
     const navigated = location !== nextProps.location;
 
@@ -82,7 +60,7 @@ export class AsyncConnect extends Component {
     // TODO: think of a better solution to a problem?
     this.loadDataCounter += 1;
     beginGlobalLoad();
-    return (loadDataCounterOriginal => loadResult.then(() => {
+    return ((loadDataCounterOriginal) => loadResult.then(() => {
       // We need to change propsToShow only if loadAsyncData that called this promise
       // is the last invocation of loadAsyncData method. Otherwise we can face a situation
       // when user is changing route several times and we finally show him route that has
@@ -112,6 +90,28 @@ export class AsyncConnect extends Component {
     );
   }
 }
+
+AsyncConnect.propTypes = {
+  render: PropTypes.func,
+  beginGlobalLoad: PropTypes.func.isRequired,
+  endGlobalLoad: PropTypes.func.isRequired,
+  reloadOnPropsChange: PropTypes.func,
+  routes: PropTypes.array.isRequired,
+  location: PropTypes.object.isRequired,
+  match: PropTypes.object.isRequired,
+  helpers: PropTypes.any,
+  reduxConnectStore: PropTypes.object.isRequired,
+};
+
+AsyncConnect.defaultProps = {
+  helpers: {},
+  reloadOnPropsChange() {
+    return true;
+  },
+  render({ routes }) {
+    return renderRoutes(routes);
+  },
+};
 
 const AsyncConnectWithContext = ({ context, ...otherProps }) => {
   const Context = context || ReactReduxContext;

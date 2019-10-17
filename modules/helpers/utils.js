@@ -50,7 +50,7 @@ export function eachComponents(components, iterator) {
     const component = components[i];
     if (typeof component === 'object') {
       const keys = Object.keys(component);
-      keys.forEach(key => iterator(component[key], i, key));
+      keys.forEach((key) => iterator(component[key], i, key));
     } else {
       iterator(component, i);
     }
@@ -132,7 +132,7 @@ export function loadAsyncConnect({
         });
 
         if (isPromise(promiseOrResult)) {
-          promiseOrResult = promiseOrResult.catch(error => ({ error }));
+          promiseOrResult = promiseOrResult.catch((error) => ({ error }));
         }
 
         itemsResults.push(promiseOrResult);
@@ -142,7 +142,7 @@ export function loadAsyncConnect({
     }, []));
 
     return Promise.all(results)
-      .then(finalResults => finalResults.reduce((finalResult, result, idx) => {
+      .then((finalResults) => finalResults.reduce((finalResult, result, idx) => {
         const { key } = asyncItemsArr[idx];
         if (key) {
           finalResult[key] = result;
