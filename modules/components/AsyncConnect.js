@@ -13,6 +13,7 @@ export class AsyncConnect extends Component {
 
     this.state = {
       previousLocation: this.isLoaded() ? null : props.location,
+      isInitialLoaded: false,
     };
 
     this.mounted = false;
@@ -72,6 +73,12 @@ export class AsyncConnect extends Component {
         this.setState({ previousLocation: null });
       }
 
+      const { isInitialLoaded } = this.state;
+
+      if (!isInitialLoaded) {
+        this.setState({ isInitialLoaded: true });
+      }
+
       // TODO: investigate race conditions
       // do we need to call this if it's not last invocation?
       endGlobalLoad();
@@ -79,15 +86,15 @@ export class AsyncConnect extends Component {
   }
 
   render() {
-    const { previousLocation } = this.state;
+    const { previousLocation, isInitialLoaded } = this.state;
     const { location, render } = this.props;
 
-    return (
+    return isInitialLoaded ? (
       <Route
         location={previousLocation || location}
         render={() => render(this.props)}
       />
-    );
+    ) : null;
   }
 }
 
