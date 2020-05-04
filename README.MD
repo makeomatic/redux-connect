@@ -49,9 +49,9 @@ const App = props => {
   );
 };
 
-// Conenect App with asyncConnect
+// Connect App with asyncConnect
 const ConnectedApp = asyncConnect([
-  // API for ayncConnect decorator: https://github.com/makeomatic/redux-connect/blob/master/docs/API.MD#asyncconnect-decorator
+  // API for asyncConnect decorator: https://github.com/makeomatic/redux-connect/blob/master/docs/API.MD#asyncconnect-decorator
   {
     key: "asyncConnectKeyExample",
     promise: ({ match: { params }, helpers }) =>
@@ -188,7 +188,7 @@ There are some solutions of problem described above:
   It uses callbacks against promises...
 - [**react-fetcher**](https://github.com/markdalgleish/react-fetcher)
   It's very simple library too. But it provides you only interface for decorating your components and methods
-  to fetch data for them. It doesn't integrated with React Router or Redux. So, you need to write you custom logic
+  to fetch data for them. It doesn't integrate with React Router or Redux. So, you need to write your custom logic
   to delay routing transition for example.
 - [**react-resolver**](https://github.com/ericclemmons/react-resolver)
   Works similar, but isn't integrated with redux.
