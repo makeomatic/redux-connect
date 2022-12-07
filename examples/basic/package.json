@@ -5,7 +5,7 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "compression": "^1.7.1",
-    "express": "^4.16.2",
+    "express": "^4.17.3",
     "ignore-styles": "^5.0.1",
     "morgan": "^1.9.0",
     "react": "^16.2.0",
